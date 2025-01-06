@@ -1,0 +1,28 @@
+#!/bin/sh
+echo '------ STARTING COMMIT - FORMATTING / LINTING / TESTS 🐉 ------'
+
+npx --no -- commitlint --edit "$1"
+
+npm run lint-staged
+
+echo '-'
+echo '-'
+echo '-'
+echo '------ COMMIT FORMATTED SUCCESSFULLY 🐉 ------'
+echo '-'
+echo '-'
+echo '------ START UNIT TESTS ------'
+
+npm run test:unit
+
+echo '------ START INTEGRATION TESTS ------'
+
+npm run test:integration
+
+echo '-'
+echo '-'
+echo '------ TESTS PASSED ------'
+echo '-'
+echo '-'
+echo '------ CHECKING COMMIT MESSAGE 🐉 ------'
+echo '-'
