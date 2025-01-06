@@ -1,0 +1,11 @@
+{
+  "tabWidth": 2,
+  "semi": true,
+  "singleQuote": true,
+  "ignore": [
+    "node_modules",
+    "dist"
+  ],
+  "trailingComma": "all",
+  "printWidth": 120
+}
