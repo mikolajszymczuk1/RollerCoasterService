@@ -4,13 +4,13 @@
   "description": "Backend service for rollercoaster system",
   "main": "app/server.ts",
   "scripts": {
-    "start": "dotenv -e .env -- npx npm-run-all --parallel dev:server dev:build",
+    "start": "npx npm-run-all --parallel dev:server dev:build",
     "build:prod": "webpack build --progress --color",
     "dev:build": "webpack --watch",
     "dev:server": "webpack && nodemon \"./dist/server.js\" --watch \"./dist\"",
     "preview": "node dist/server.js",
-    "test:unit": "jest --testMatch '<rootDir>/app/tests/unit/**/*.spec.ts' --silent --detectOpenHandles --workerIdleMemoryLimit=512MB --passWithNoTests",
-    "test:integration": "jest --testMatch '<rootDir>/app/tests/integration/**/*.spec.ts' --silent --detectOpenHandles --workerIdleMemoryLimit=512MB --passWithNoTests",
+    "test:unit": "jest --testMatch '<rootDir>/src/tests/unit/**/*.spec.ts' --silent --detectOpenHandles --workerIdleMemoryLimit=512MB --passWithNoTests",
+    "test:integration": "jest --testMatch '<rootDir>/src/tests/integration/**/*.spec.ts' --silent --detectOpenHandles --workerIdleMemoryLimit=512MB --passWithNoTests",
     "lint": "eslint",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write \"./**/*.+(js|ts)\"",
@@ -35,7 +35,10 @@
     "express-validator": "^7.2.1",
     "helmet": "^8.0.0",
     "husky": "^9.1.7",
-    "redis": "^4.7.0"
+    "inversify": "^6.2.1",
+    "redis": "^4.7.0",
+    "reflect-metadata": "^0.2.2",
+    "winston": "^3.17.0"
   },
   "devDependencies": {
     "@commitlint/cli": "^19.6.1",
