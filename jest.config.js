@@ -2,7 +2,7 @@
 
 const dotenv = require('dotenv');
 
-dotenv.config({ override: true, path: '.env.test.local' });
+dotenv.config({ override: true, path: '.env.test' });
 
 module.exports = {
   preset: 'ts-jest',

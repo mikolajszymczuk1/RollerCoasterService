@@ -5,7 +5,7 @@ const nodeExternals = require('webpack-node-externals');
 
 module.exports = {
   mode: 'development',
-  entry: './app/server.ts',
+  entry: './src/server.ts',
   target: 'node',
   externals: [nodeExternals()],
   devtool: 'source-map',
@@ -13,7 +13,17 @@ module.exports = {
     rules: [
       {
         test: /\.tsx?$/,
-        use: 'swc-loader',
+        use: {
+          loader: 'swc-loader',
+          options: {
+            jsc: {
+              parser: {
+                syntax: 'typescript',
+                decorators: true,
+              },
+            },
+          },
+        },
         exclude: /node_modules/,
       },
     ],
