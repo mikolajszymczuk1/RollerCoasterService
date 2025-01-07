@@ -1,16 +1,22 @@
-import express, { type Router } from 'express';
 import { container } from '@/config/container';
-import RedisClient from '@/infrastructure/database/redisClient';
+import express, { type Router } from 'express';
 import { ContainerTypes } from '@/types/common';
+import CoasterController from '@/app/controllers/Coaster.controller';
 
-const rollercoasterRouter: Router = express.Router();
+const rollercoasterRouter = (): Router => {
+  const coasterController = container.get<CoasterController>(ContainerTypes.CoasterController);
 
-rollercoasterRouter.get('/ping', async (req, res): Promise<void> => {
-  const redisClient = container.get<RedisClient>(ContainerTypes.RedisClient).getClient();
-  const testValue = await redisClient.get('test');
-  console.log(testValue);
+  const router: Router = express.Router();
 
-  res.status(200).json({ msg: 'pong !' });
-});
+  router.post('/', coasterController.addCoasterAction.bind(coasterController));
+
+  router.put('/:coasterId', coasterController.updateCoasterAction.bind(coasterController));
+
+  router.post('/:coasterId/wagons', coasterController.addWagonAction.bind(coasterController));
+
+  router.delete('/:coasterId/wagons/:wagonId', coasterController.deleteWagonAction.bind(coasterController));
+
+  return router;
+};
 
 export default rollercoasterRouter;

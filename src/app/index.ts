@@ -7,8 +7,8 @@ import { json } from 'body-parser';
 import { injectable, inject } from 'inversify';
 import { ContainerTypes } from '@/types/common';
 import Logger from '@/infrastructure/logger';
-import rollercoasterRouter from '@/app/routes/rollercoaster.router';
 import RedisClient from '@/infrastructure/database/redisClient';
+import rollercoasterRouter from '@/app/routes/rollercoaster.router';
 
 @injectable()
 export class App {
@@ -41,7 +41,7 @@ export class App {
 
   /** Load app routes */
   private loadRoutes(): void {
-    this.app.use('/api/coasters', rollercoasterRouter);
+    this.app.use('/api/coasters', rollercoasterRouter());
     this.logger.info('App routes loaded ✅');
   }
 
