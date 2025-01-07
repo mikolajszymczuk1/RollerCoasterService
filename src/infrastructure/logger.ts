@@ -3,26 +3,42 @@ import { createLogger, format, transports } from 'winston';
 
 @injectable()
 class Logger {
+  private readonly INFO_FILE: string = 'logs/info.log';
+  private readonly ERROR_FILE: string = 'logs/error.log';
+  private readonly WARN_FILE: string = 'logs/warn.log';
+
   private static instance: Logger;
   private readonly logger: ReturnType<typeof createLogger>;
+
+  private readonly transportsLocal = [
+    new transports.Console({
+      format: format.combine(
+        format.colorize(),
+        format.printf(({ level, message, timestamp }) => {
+          return `[${timestamp}] ${level}: ${message}`;
+        }),
+      ),
+    }),
+    new transports.File({ filename: this.INFO_FILE, level: 'info' }),
+    new transports.File({ filename: this.ERROR_FILE, level: 'error' }),
+    new transports.File({ filename: this.WARN_FILE, level: 'warn' }),
+  ];
+
+  private readonly transportsProd = [
+    new transports.File({ filename: this.ERROR_FILE, level: 'error' }),
+    new transports.File({ filename: this.WARN_FILE, level: 'warn' }),
+  ];
 
   constructor() {
     this.logger = createLogger({
       level: 'info',
       format: format.combine(format.timestamp(), format.errors({ stack: true }), format.json()),
-      transports: [
-        new transports.Console({
-          format: format.combine(
-            format.colorize(),
-            format.printf(({ level, message, timestamp }) => {
-              return `[${timestamp}] ${level}: ${message}`;
-            }),
-          ),
-        }),
-        new transports.File({ filename: 'logs/error.log', level: 'error' }),
-        new transports.File({ filename: 'logs/warn.log', level: 'warn' }),
-      ],
+      transports: this.isLocalEnv ? this.transportsLocal : this.transportsProd,
     });
+  }
+
+  get isLocalEnv(): boolean {
+    return process.env.ENV_TYPE === 'local';
   }
 
   /**
@@ -42,6 +58,7 @@ class Logger {
    * @param {string} message message to log
    */
   public info(message: string): void {
+    if (!this.isLocalEnv) return;
     this.logger.info(message);
   }
 
@@ -66,6 +83,7 @@ class Logger {
    * @param {string} message message to log
    */
   public debug(message: string): void {
+    if (!this.isLocalEnv) return;
     this.logger.debug(message);
   }
 }

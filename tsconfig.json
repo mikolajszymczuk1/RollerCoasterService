@@ -1,10 +1,11 @@
 {
-  "exclude": ["./coverage", "./dist", "jest.config.js", "node_modules"],
+  "exclude": ["./coverage", "./dist", "node_modules"],
   "ts-node": {
     "transpileOnly": true,
     "files": true
   },
   "compilerOptions": {
+    "baseUrl": ".",
     "outDir": "./dist",
     "target": "ESNext",
     "module": "ESNext",
@@ -13,7 +14,7 @@
     "forceConsistentCasingInFileNames": true,
     "strict": true,
     "lib": ["ESNext", "DOM"],
-    "types": ["reflect-metadata"],
+    "types": ["reflect-metadata", "jest"],
     "skipLibCheck": true,
     "moduleResolution": "node",
     "noImplicitAny": false,
