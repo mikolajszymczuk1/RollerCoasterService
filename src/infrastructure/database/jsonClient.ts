@@ -9,6 +9,7 @@ import Coaster from '@/domain/entities/Coaster.entity';
 @injectable()
 class JSONClient {
   private readonly logger: Logger;
+  private readonly dirPath: string;
   private readonly filePath: string;
 
   private coasterId: number;
@@ -16,6 +17,7 @@ class JSONClient {
 
   constructor(@inject(ContainerTypes.Logger) logger: Logger) {
     this.logger = logger;
+    this.dirPath = path.resolve(__dirname, '../src/data');
     this.filePath = path.resolve(__dirname, `../src/data/data.${process.env.ENV_TYPE}.json`);
     const data = this.readData();
     const allCoasters = Array.from(data.values());
@@ -46,9 +48,14 @@ class JSONClient {
    */
   public readData(): Map<number, Coaster> {
     try {
+      if (!fs.existsSync(this.dirPath)) {
+        fs.mkdirSync(this.dirPath);
+      }
+
       if (!fs.existsSync(this.filePath)) {
         fs.writeFileSync(this.filePath, '[]');
       }
+
       const data = fs.readFileSync(this.filePath, 'utf8');
       const coasters = plainToInstance(Coaster, JSON.parse(data));
       const coastersMap = new Map<number, Coaster>();
