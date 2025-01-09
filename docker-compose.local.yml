@@ -1,0 +1,23 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: DockerFile.local
+      args:
+        - PORT=${PORT}
+    environment:
+      - ENV_TYPE=${ENV_TYPE}
+      - PORT=${PORT}
+      - REDIS_URL=${REDIS_URL}
+      - DATABASE=${DATABASE}
+    ports:
+      - "${PORT}:${PORT}"
+    volumes:
+      - ./logs:/app/logs
+      - ./src/data:/app/src/data
+    networks:
+      - custom_network
+
+networks:
+  custom_network:
+    driver: bridge
