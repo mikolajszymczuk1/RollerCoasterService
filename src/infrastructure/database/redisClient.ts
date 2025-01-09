@@ -20,14 +20,17 @@ class RedisClient {
     });
   }
 
+  /** Get redis client */
   public getClient(): RedisClientType {
     return this.client;
   }
 
+  /** Connect to redis service */
   public async connect(): Promise<void> {
     await this.client.connect();
   }
 
+  /** Disconnect from redis service */
   public async disconnect(): Promise<void> {
     await this.client.disconnect();
   }

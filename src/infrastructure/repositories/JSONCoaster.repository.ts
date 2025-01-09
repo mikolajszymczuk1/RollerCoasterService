@@ -1,24 +1,102 @@
-import { injectable } from 'inversify';
+import { injectable, inject } from 'inversify';
 import { ICoasterRepository } from '@/domain/repositories/ICoaster.repository';
 import Coaster from '@/domain/entities/Coaster.entity';
 import Wagon from '@/domain/entities/Wagon.entity';
+import JSONClient from '@/infrastructure/database/jsonClient';
+import { ContainerTypes } from '@/types/common';
 
 @injectable()
 class JSONCoasterRepository implements ICoasterRepository {
+  private readonly jsonClient: JSONClient;
+
+  constructor(@inject(ContainerTypes.JSONClient) jsonClient: JSONClient) {
+    this.jsonClient = jsonClient;
+  }
+
+  /**
+   * Add new coaster
+   * @param {Coaster} coasterToAdd coaster data to save
+   * @returns {Coaster} added coaster
+   */
   public addCoaster(coasterToAdd: Coaster): Coaster {
-    return new Coaster(1, 10, 1000, 200, '10:00', '18:00');
+    const coastersMap = this.jsonClient.readData();
+    const id = this.jsonClient.nextCoasterId;
+    const coaster = coasterToAdd;
+    coaster.id = id;
+    coastersMap.set(id, coaster);
+    this.jsonClient.writeData(coastersMap);
+    return coaster;
   }
 
+  /**
+   * Update coaster data
+   * @param {number} coasterId coaster id
+   * @param {Coaster} newCoasterData new coaster data to save
+   * @returns {Coaster} updated coaster
+   */
   public updateCoaster(coasterId: number, newCoasterData: Coaster): Coaster {
-    return new Coaster(1, 100, 2000, 500, '11:00', '18:00');
+    const coastersMap = this.jsonClient.readData();
+    const coaster = coastersMap.get(coasterId);
+
+    if (!coaster) {
+      throw new Error(`Coaster with id ${coasterId} not found`);
+    }
+
+    const updatedCoaster = newCoasterData;
+    updatedCoaster.id = coaster.id;
+    coastersMap.set(coasterId, updatedCoaster);
+    this.jsonClient.writeData(coastersMap);
+    return updatedCoaster;
   }
 
-  public addWagon(wagonToAdd: Wagon): Wagon {
-    return new Wagon(1, 1.6);
+  /**
+   * Add new wagon to coaster
+   * @param {number} coasterId coaster id
+   * @param {Wagon} wagonToAdd wagon data to add
+   * @returns {Wagon} added wagon
+   */
+  public addWagon(coasterId: number, wagonToAdd: Wagon): Wagon {
+    const coastersMap = this.jsonClient.readData();
+    const coaster = coastersMap.get(coasterId);
+
+    if (!coaster) {
+      throw new Error(`Coaster with id ${coasterId} not found`);
+    }
+
+    const id = this.jsonClient.nextWagonId;
+    const wagon = wagonToAdd;
+    wagon.id = id;
+    coaster.wagons.push(wagon);
+
+    coastersMap.set(coasterId, coaster);
+    this.jsonClient.writeData(coastersMap);
+    return wagon;
   }
 
-  public deleteWagon(wagonId: number): Wagon {
-    return new Wagon(1, 1.8);
+  /**
+   * Delete single wagon
+   * @param {number} coasterId coaster id
+   * @param {number} wagonId wagon id
+   * @returns {Wagon} deleted wagon
+   */
+  public deleteWagon(coasterId: number, wagonId: number): Wagon {
+    const coastersMap = this.jsonClient.readData();
+    const coaster = coastersMap.get(coasterId);
+
+    if (!coaster) {
+      throw new Error(`Coaster with id ${coasterId} not found`);
+    }
+
+    const wagon = coaster.wagons.find((wagon) => wagon.id === wagonId);
+
+    if (!wagon) {
+      throw new Error(`Wagon with id ${wagonId} not found in coaster with id ${coasterId}`);
+    }
+
+    coaster.wagons = coaster.wagons.filter((wagon) => wagon.id !== wagonId);
+    coastersMap.set(coasterId, coaster);
+    this.jsonClient.writeData(coastersMap);
+    return wagon;
   }
 }
 

@@ -1,4 +1,5 @@
-import { Expose } from 'class-transformer';
+import { Expose, Type } from 'class-transformer';
+import Wagon from '@/domain/entities/Wagon.entity';
 
 class Coaster {
   @Expose()
@@ -19,6 +20,10 @@ class Coaster {
   @Expose()
   hoursTo: string;
 
+  @Expose()
+  @Type(() => Wagon)
+  wagons: Wagon[] = [];
+
   constructor(
     id: number,
     numberOfPersonnel: number,
@@ -26,6 +31,7 @@ class Coaster {
     lengthOfRoute: number,
     hoursFrom: string,
     hoursTo: string,
+    wagons: Wagon[] = [],
   ) {
     this.id = id;
     this.numberOfPersonnel = numberOfPersonnel;
@@ -33,6 +39,7 @@ class Coaster {
     this.lengthOfRoute = lengthOfRoute;
     this.hoursFrom = hoursFrom;
     this.hoursTo = hoursTo;
+    this.wagons = wagons;
   }
 }
 

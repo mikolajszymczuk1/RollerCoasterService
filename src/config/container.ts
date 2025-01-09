@@ -2,6 +2,7 @@ import { Container } from 'inversify';
 import Logger from '@/infrastructure/logger';
 import App from '@/app';
 import RedisClient from '@/infrastructure/database/redisClient';
+import JSONClient from '@/infrastructure/database/jsonClient';
 import { ContainerTypes } from '@/types/common';
 import CoasterController from '@/app/controllers/Coaster.controller';
 import type { ICoasterRepository } from '@/domain/repositories/ICoaster.repository';
@@ -17,6 +18,8 @@ container.bind<App>(ContainerTypes.App).to(App);
 container.bind<Logger>(ContainerTypes.Logger).to(Logger).inSingletonScope();
 
 container.bind<RedisClient>(ContainerTypes.RedisClient).to(RedisClient).inSingletonScope();
+
+container.bind<JSONClient>(ContainerTypes.JSONClient).to(JSONClient).inSingletonScope();
 
 container.bind<CoasterController>(ContainerTypes.CoasterController).to(CoasterController);
 
