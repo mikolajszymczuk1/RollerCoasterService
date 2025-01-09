@@ -1,7 +1,56 @@
 import { injectable, inject } from 'inversify';
 import type { ICoasterService } from '@/domain/services/ICoaster.service';
+import type { ICoasterRepository } from '@/domain/repositories/ICoaster.repository';
+import { ContainerTypes } from '@/types/common';
+import Coaster from '@/domain/entities/Coaster.entity';
+import Wagon from '@/domain/entities/Wagon.entity';
 
 @injectable()
-class CoasterService implements ICoasterService {}
+class CoasterService implements ICoasterService {
+  private readonly jsonCoasterRepository: ICoasterRepository;
+
+  constructor(@inject(ContainerTypes.JSONCoasterRepository) jsonCoasterRepository: ICoasterRepository) {
+    this.jsonCoasterRepository = jsonCoasterRepository;
+  }
+
+  /**
+   * Add new coaster + pub changes to redis
+   * @param {Coaster} coasterToAdd coaster data to save
+   * @returns {Coaster} added coaster
+   */
+  public addCoaster(coasterToAdd: Coaster): Coaster {
+    return this.jsonCoasterRepository.addCoaster(coasterToAdd);
+  }
+
+  /**
+   * Update coaster data + pub changes to redis
+   * @param {number} coasterId coaster id
+   * @param {Coaster} newCoasterData new coaster data to save
+   * @returns {Coaster} updated coaster
+   */
+  public updateCoaster(coasterId: number, newCoasterData: Coaster): Coaster {
+    return this.jsonCoasterRepository.updateCoaster(coasterId, newCoasterData);
+  }
+
+  /**
+   * Add new wagon to coaster + pub changes to redis
+   * @param {number} coasterId coaster id
+   * @param {Wagon} wagonToAdd wagon data to add
+   * @returns {Wagon} added wagon
+   */
+  public addWagon(coasterId: number, wagonToAdd: Wagon): Wagon {
+    return this.jsonCoasterRepository.addWagon(coasterId, wagonToAdd);
+  }
+
+  /**
+   * Delete single wagon + pub changes to redis
+   * @param {number} coasterId coaster id
+   * @param {number} wagonId wagon id
+   * @returns {Wagon} deleted wagon
+   */
+  public deleteWagon(coasterId: number, wagonId: number): Wagon {
+    return this.jsonCoasterRepository.deleteWagon(coasterId, wagonId);
+  }
+}
 
 export default CoasterService;

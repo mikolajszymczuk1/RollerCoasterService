@@ -13,12 +13,12 @@ class RedisCoasterRepository implements ICoasterRepository {
     return new Coaster(1, 100, 2000, 500, '11:00', '18:00');
   }
 
-  public addWagon(wagonToAdd: Wagon): Wagon {
-    return new Wagon(1, 1.6);
+  public addWagon(coasterId: number, wagonToAdd: Wagon): Wagon {
+    return new Wagon(1, 1, 1.6);
   }
 
-  public deleteWagon(wagonId: number): Wagon {
-    return new Wagon(1, 1.8);
+  public deleteWagon(coasterId: number, wagonId: number): Wagon {
+    return new Wagon(1, 1, 1.8);
   }
 }
 

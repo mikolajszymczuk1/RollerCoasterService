@@ -1,15 +1,43 @@
 import { injectable, inject } from 'inversify';
+import { instanceToPlain } from 'class-transformer';
 import type { Request, Response } from 'express';
+import type { ICoasterService } from '@/domain/services/ICoaster.service';
+import { ContainerTypes } from '@/types/common';
+import Logger from '@/infrastructure/logger';
+import { ResponseCodes } from '@/app/enums/ResponseCodes';
+import Coaster from '@/domain/entities/Coaster.entity';
+import Wagon from '@/domain/entities/Wagon.entity';
 
 @injectable()
 class CoasterController {
+  private readonly logger: Logger;
+  private readonly coasterService: ICoasterService;
+
+  constructor(
+    @inject(ContainerTypes.Logger) logger: Logger,
+    @inject(ContainerTypes.CoasterService) coasterService: ICoasterService,
+  ) {
+    this.logger = logger;
+    this.coasterService = coasterService;
+  }
+
   /**
    * Add new coaster action
    * @param {Request} req Request
    * @param {Response} res Response
    */
   public async addCoasterAction(req: Request, res: Response): Promise<void> {
-    res.status(200).json({ msg: 'ok' });
+    try {
+      const { numberOfPersonnel, numberOfCustomers, lengthOfRoute, hoursFrom, hoursTo } = req.body;
+      const coasterToAdd = new Coaster(-1, numberOfPersonnel, numberOfCustomers, lengthOfRoute, hoursFrom, hoursTo);
+
+      const savedCoaster = this.coasterService.addCoaster(coasterToAdd);
+
+      res.status(ResponseCodes.CREATED).json(instanceToPlain(savedCoaster));
+    } catch (err) {
+      this.logger.error(`Error adding coaster: ${err}`);
+      res.status(ResponseCodes.INTERNAL_SERVER_ERROR).json(err);
+    }
   }
 
   /**
@@ -18,7 +46,18 @@ class CoasterController {
    * @param {Response} res Response
    */
   public async updateCoasterAction(req: Request, res: Response): Promise<void> {
-    res.status(200).json({ msg: 'ok' });
+    try {
+      const coasterId = parseInt(req.params.coasterId);
+      const { numberOfPersonnel, numberOfCustomers, lengthOfRoute, hoursFrom, hoursTo } = req.body;
+      const coasterToUpdate = new Coaster(-1, numberOfPersonnel, numberOfCustomers, lengthOfRoute, hoursFrom, hoursTo);
+
+      const updatedCoaster = this.coasterService.updateCoaster(coasterId, coasterToUpdate);
+
+      res.status(ResponseCodes.OK).json(updatedCoaster);
+    } catch (err) {
+      this.logger.error(`Error updating coaster: ${err}`);
+      res.status(ResponseCodes.INTERNAL_SERVER_ERROR).json(err);
+    }
   }
 
   /**
@@ -27,7 +66,18 @@ class CoasterController {
    * @param {Response} res Response
    */
   public async addWagonAction(req: Request, res: Response): Promise<void> {
-    res.status(200).json({ msg: 'ok' });
+    try {
+      const coasterId = parseInt(req.params.coasterId);
+      const { numberOfSeats, speed } = req.body;
+      const wagonToAdd = new Wagon(-1, numberOfSeats, speed);
+
+      const savedWagon = this.coasterService.addWagon(coasterId, wagonToAdd);
+
+      res.status(ResponseCodes.CREATED).json(savedWagon);
+    } catch (err) {
+      this.logger.error(`Error adding wagon: ${err}`);
+      res.status(ResponseCodes.INTERNAL_SERVER_ERROR).json(err);
+    }
   }
 
   /**
@@ -36,7 +86,16 @@ class CoasterController {
    * @param {Response} res Response
    */
   public async deleteWagonAction(req: Request, res: Response): Promise<void> {
-    res.status(200).json({ msg: 'ok' });
+    try {
+      const { coasterId, wagonId } = req.params;
+
+      const deletedWagon = this.coasterService.deleteWagon(parseInt(coasterId), parseInt(wagonId));
+
+      res.status(ResponseCodes.OK).json(deletedWagon);
+    } catch (err) {
+      this.logger.error(`Error deleting wagon: ${err}`);
+      res.status(ResponseCodes.INTERNAL_SERVER_ERROR).json(err);
+    }
   }
 }
 

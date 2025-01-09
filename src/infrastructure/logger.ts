@@ -12,6 +12,7 @@ class Logger {
 
   private readonly transportsLocal = [
     new transports.Console({
+      level: 'info',
       format: format.combine(
         format.colorize(),
         format.printf(({ level, message, timestamp }) => {
@@ -25,14 +26,28 @@ class Logger {
   ];
 
   private readonly transportsProd = [
+    new transports.Console({
+      level: 'warn',
+      format: format.combine(
+        format.colorize(),
+        format.printf(({ level, message, timestamp }) => {
+          return `[${timestamp}] ${level}: ${message}`;
+        }),
+      ),
+    }),
     new transports.File({ filename: this.ERROR_FILE, level: 'error' }),
     new transports.File({ filename: this.WARN_FILE, level: 'warn' }),
   ];
 
   constructor() {
     this.logger = createLogger({
-      level: 'info',
-      format: format.combine(format.timestamp(), format.errors({ stack: true }), format.json()),
+      format: format.combine(
+        format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
+        format.errors({ stack: true }),
+        format.printf(({ level, message, timestamp }) => {
+          return `[${timestamp}] ${level}: ${message}`;
+        }),
+      ),
       transports: this.isLocalEnv ? this.transportsLocal : this.transportsProd,
     });
   }

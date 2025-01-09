@@ -11,6 +11,15 @@
 			"request": {
 				"method": "POST",
 				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"numberOfPersonnel\": 2000,\n    \"numberOfCustomers\": 50,\n    \"lengthOfRoute\": 500,\n    \"hoursFrom\": \"10:00\",\n    \"hoursTo\": \"15:00\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
 				"url": {
 					"raw": "http://localhost:8080/api/coasters",
 					"protocol": "http",
@@ -31,8 +40,17 @@
 			"request": {
 				"method": "PUT",
 				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"id\": 4,\n    \"numberOfPersonnel\": 2,\n    \"numberOfCustomers\": 2,\n    \"lengthOfRoute\": 10,\n    \"hoursFrom\": \"06:00\",\n    \"hoursTo\": \"08:00\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
 				"url": {
-					"raw": "http://localhost:8080/api/coasters/4",
+					"raw": "http://localhost:8080/api/coasters/2",
 					"protocol": "http",
 					"host": [
 						"localhost"
@@ -41,7 +59,7 @@
 					"path": [
 						"api",
 						"coasters",
-						"4"
+						"2"
 					]
 				}
 			},
@@ -52,8 +70,17 @@
 			"request": {
 				"method": "POST",
 				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"numberOfSeats\": 100,\n    \"speed\": 1.5\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
 				"url": {
-					"raw": "http://localhost:8080/api/coasters/4/wagons",
+					"raw": "http://localhost:8080/api/coasters/2/wagons",
 					"protocol": "http",
 					"host": [
 						"localhost"
@@ -62,7 +89,7 @@
 					"path": [
 						"api",
 						"coasters",
-						"4",
+						"2",
 						"wagons"
 					]
 				}
@@ -75,7 +102,7 @@
 				"method": "DELETE",
 				"header": [],
 				"url": {
-					"raw": "http://localhost:8080/api/coasters/4/wagons/2",
+					"raw": "http://localhost:8080/api/coasters/1/wagons/1",
 					"protocol": "http",
 					"host": [
 						"localhost"
@@ -84,9 +111,9 @@
 					"path": [
 						"api",
 						"coasters",
-						"4",
+						"1",
 						"wagons",
-						"2"
+						"1"
 					]
 				}
 			},

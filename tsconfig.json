@@ -13,15 +13,21 @@
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "strict": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "strictFunctionTypes": true,
+    "strictBindCallApply": true,
+    "strictPropertyInitialization": true,
+    "noImplicitThis": true,
+    "alwaysStrict": true,
     "lib": ["ESNext", "DOM"],
     "types": ["reflect-metadata", "jest"],
-    "skipLibCheck": true,
+    "skipLibCheck": false,
     "moduleResolution": "node",
-    "noImplicitAny": false,
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
     "paths": {
       "@/*": ["./src/*"]
-    },
+    }
   }
 }
