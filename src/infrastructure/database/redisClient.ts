@@ -21,7 +21,7 @@ class RedisClient {
   }
 
   /** Get redis client */
-  public getClient(): RedisClientType {
+  public get redisClient(): RedisClientType {
     return this.client;
   }
 

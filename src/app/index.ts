@@ -9,20 +9,24 @@ import { ContainerTypes } from '@/types/common';
 import Logger from '@/infrastructure/logger';
 import RedisClient from '@/infrastructure/database/redisClient';
 import rollercoasterRouter from '@/app/routes/rollercoaster.router';
+import type { ILeaderManagerService } from '@/domain/services/redis/ILeaderManager.service';
 
 @injectable()
 export class App {
   private readonly logger: Logger;
   private readonly redisClient: RedisClient;
+  private readonly leaderManagerService: ILeaderManagerService;
 
   public app: Application;
 
   constructor(
     @inject(ContainerTypes.Logger) logger: Logger,
     @inject(ContainerTypes.RedisClient) redisClient: RedisClient,
+    @inject(ContainerTypes.LeaderManager) leaderManagerService: ILeaderManagerService,
   ) {
     this.logger = logger;
     this.redisClient = redisClient;
+    this.leaderManagerService = leaderManagerService;
     this.app = express();
     this.logger.info('App instance created ✅');
 
@@ -48,6 +52,7 @@ export class App {
   /** Initialize all app services */
   public async initializeServices(): Promise<void> {
     await this.redisClient.connect();
+    this.leaderManagerService.initLeadershipCheck();
     this.logger.info('App services loaded ✅');
   }
 }

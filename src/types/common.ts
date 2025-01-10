@@ -7,4 +7,5 @@ export const ContainerTypes = {
   JSONCoasterRepository: Symbol.for('JSONCoasterRepository'),
   RedisCoasterRepository: Symbol.for('RedisCoasterRepository'),
   CoasterService: Symbol.for('CoasterService'),
+  LeaderManager: Symbol.for('LeaderManager'),
 };

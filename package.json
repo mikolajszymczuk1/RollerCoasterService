@@ -39,6 +39,7 @@
     "inversify": "^6.2.1",
     "redis": "^4.7.0",
     "reflect-metadata": "^0.2.2",
+    "uuid": "^11.0.5",
     "winston": "^3.17.0"
   },
   "devDependencies": {
