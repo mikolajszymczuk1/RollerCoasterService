@@ -50,7 +50,7 @@
 					}
 				},
 				"url": {
-					"raw": "http://localhost:8080/api/coasters/2",
+					"raw": "http://localhost:8080/api/coasters/coaster:2",
 					"protocol": "http",
 					"host": [
 						"localhost"
@@ -59,7 +59,7 @@
 					"path": [
 						"api",
 						"coasters",
-						"2"
+						"coaster:2"
 					]
 				}
 			},
@@ -80,7 +80,7 @@
 					}
 				},
 				"url": {
-					"raw": "http://localhost:8080/api/coasters/2/wagons",
+					"raw": "http://localhost:8080/api/coasters/coaster:1/wagons",
 					"protocol": "http",
 					"host": [
 						"localhost"
@@ -89,7 +89,7 @@
 					"path": [
 						"api",
 						"coasters",
-						"2",
+						"coaster:1",
 						"wagons"
 					]
 				}
@@ -102,7 +102,7 @@
 				"method": "DELETE",
 				"header": [],
 				"url": {
-					"raw": "http://localhost:8080/api/coasters/1/wagons/1",
+					"raw": "http://localhost:8080/api/coasters/coaster:1/wagons/wagon:5",
 					"protocol": "http",
 					"host": [
 						"localhost"
@@ -111,9 +111,9 @@
 					"path": [
 						"api",
 						"coasters",
-						"1",
+						"coaster:1",
 						"wagons",
-						"1"
+						"wagon:5"
 					]
 				}
 			},

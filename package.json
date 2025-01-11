@@ -15,7 +15,8 @@
     "lint:fix": "eslint . --fix",
     "format": "prettier --write \"./**/*.+(js|ts)\"",
     "prepare": "husky",
-    "lint-staged": "lint-staged"
+    "lint-staged": "lint-staged",
+    "type-lint": "tsc --noEmit"
   },
   "lint-staged": {
     "*.{js, ts}": [

@@ -3,7 +3,7 @@ import Wagon from '@/domain/entities/Wagon.entity';
 
 class Coaster {
   @Expose()
-  id: number;
+  id: string;
 
   @Expose()
   numberOfPersonnel: number;
@@ -25,7 +25,7 @@ class Coaster {
   wagons: Wagon[] = [];
 
   constructor(
-    id: number,
+    id: string,
     numberOfPersonnel: number,
     numberOfCustomers: number,
     lengthOfRoute: number,

@@ -20,48 +20,82 @@ class RedisCoasterRepository implements ICoasterRepository<Promise<Coaster | Wag
    * @returns {Promise<Coaster>} added coaster
    */
   public async addCoaster(coasterToAdd: Coaster): Promise<Coaster> {
-    await this.redisClient.set(`coaster:${coasterToAdd.id}`, JSON.stringify(instanceToPlain(coasterToAdd)));
+    await this.redisClient.set(coasterToAdd.id, JSON.stringify(instanceToPlain(coasterToAdd)));
     return coasterToAdd;
   }
 
   /**
    * Update coaster data
-   * @param {number} coasterId coaster id
+   * @param {string} coasterId coaster id
    * @param {Coaster} newCoasterData new coaster data to save
    * @returns {Promise<Coaster>} updated coaster
    */
-  public async updateCoaster(coasterId: number, newCoasterData: Coaster): Promise<Coaster> {
-    await this.redisClient.set(`coaster:${coasterId}`, JSON.stringify(instanceToPlain(newCoasterData)));
+  public async updateCoaster(coasterId: string, newCoasterData: Coaster): Promise<Coaster> {
+    await this.redisClient.set(coasterId, JSON.stringify(instanceToPlain(newCoasterData)));
     return newCoasterData;
   }
 
   /**
    * Add new wagon to coaster
-   * @param {number} coasterId coaster id
+   * @param {string} coasterId coaster id
    * @param {Wagon} wagonToAdd wagon data to add
    * @returns {Promise<Wagon>} added wagon
    */
-  public async addWagon(coasterId: number, wagonToAdd: Wagon): Promise<Wagon> {
-    const data = await this.redisClient.get(`coaster:${coasterId}`);
+  public async addWagon(coasterId: string, wagonToAdd: Wagon): Promise<Wagon> {
+    const data = await this.redisClient.get(coasterId);
     const coaster = plainToInstance(Coaster, JSON.parse(data!) as Coaster);
     coaster.wagons.push(wagonToAdd);
-    await this.redisClient.set(`coaster:${coasterId}`, JSON.stringify(instanceToPlain(coaster)));
+    await this.redisClient.set(coasterId, JSON.stringify(instanceToPlain(coaster)));
     return wagonToAdd;
   }
 
   /**
    * Delete single wagon
-   * @param {number} coasterId coaster id
-   * @param {number} wagonId wagon id
+   * @param {string} coasterId coaster id
+   * @param {string} wagonId wagon id
    * @returns {Promise<Wagon>} deleted wagon
    */
-  public async deleteWagon(coasterId: number, wagonId: number): Promise<Wagon> {
-    const data = await this.redisClient.get(`coaster:${coasterId}`);
+  public async deleteWagon(coasterId: string, wagonId: string): Promise<Wagon> {
+    const data = await this.redisClient.get(coasterId);
     const coaster = plainToInstance(Coaster, JSON.parse(data!) as Coaster);
     const wagonToDelete = coaster.wagons.find((wagon) => wagon.id === wagonId)!;
     coaster.wagons = coaster.wagons.filter((wagon) => wagon.id !== wagonId);
-    await this.redisClient.set(`coaster:${coasterId}`, JSON.stringify(instanceToPlain(coaster)));
+    await this.redisClient.set(coasterId, JSON.stringify(instanceToPlain(coaster)));
     return wagonToDelete;
+  }
+
+  /**
+   * Get next coaster id based on redis central database
+   * @returns {Promise<string>} new coaster id
+   */
+  public async nextCoasterId(): Promise<string> {
+    const existNextId = await this.redisClient.get('coaster:id:next');
+    if (!existNextId) {
+      await this.redisClient.set('coaster:id:next', 'coaster:1');
+      return 'coaster:1';
+    }
+
+    const [name, value] = existNextId.split(':');
+    const nextId = `${name}:${parseInt(value) + 1}`;
+    await this.redisClient.set('coaster:id:next', nextId);
+    return nextId;
+  }
+
+  /**
+   * Get next wagon id based on redis central database
+   * @returns {Promise<string>} new wagon id
+   */
+  public async nextWagonId(): Promise<string> {
+    const existNextId = await this.redisClient.get('wagon:id:next');
+    if (!existNextId) {
+      await this.redisClient.set('wagon:id:next', 'wagon:1');
+      return 'wagon:1';
+    }
+
+    const [name, value] = existNextId.split(':');
+    const nextId = `${name}:${parseInt(value) + 1}`;
+    await this.redisClient.set('wagon:id:next', nextId);
+    return nextId;
   }
 }
 

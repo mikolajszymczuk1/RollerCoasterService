@@ -5,6 +5,8 @@ npx --no -- commitlint --edit "$1"
 
 npm run lint-staged
 
+npm run type-lint
+
 echo '-'
 echo '-'
 echo '-'
