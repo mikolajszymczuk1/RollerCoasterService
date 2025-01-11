@@ -6,7 +6,7 @@ import JSONClient from '@/infrastructure/database/jsonClient';
 import { ContainerTypes } from '@/types/common';
 
 @injectable()
-class JSONCoasterRepository implements ICoasterRepository {
+class JSONCoasterRepository implements ICoasterRepository<Coaster | Wagon> {
   private readonly jsonClient: JSONClient;
 
   constructor(@inject(ContainerTypes.JSONClient) jsonClient: JSONClient) {

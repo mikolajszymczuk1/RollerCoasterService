@@ -7,9 +7,11 @@ import Wagon from '@/domain/entities/Wagon.entity';
 
 @injectable()
 class CoasterService implements ICoasterService {
-  private readonly jsonCoasterRepository: ICoasterRepository;
+  private readonly jsonCoasterRepository: ICoasterRepository<Coaster | Wagon>;
 
-  constructor(@inject(ContainerTypes.JSONCoasterRepository) jsonCoasterRepository: ICoasterRepository) {
+  constructor(
+    @inject(ContainerTypes.JSONCoasterRepository) jsonCoasterRepository: ICoasterRepository<Coaster | Wagon>,
+  ) {
     this.jsonCoasterRepository = jsonCoasterRepository;
   }
 
@@ -19,7 +21,7 @@ class CoasterService implements ICoasterService {
    * @returns {Coaster} added coaster
    */
   public addCoaster(coasterToAdd: Coaster): Coaster {
-    return this.jsonCoasterRepository.addCoaster(coasterToAdd);
+    return this.jsonCoasterRepository.addCoaster(coasterToAdd) as Coaster;
   }
 
   /**
@@ -29,7 +31,7 @@ class CoasterService implements ICoasterService {
    * @returns {Coaster} updated coaster
    */
   public updateCoaster(coasterId: number, newCoasterData: Coaster): Coaster {
-    return this.jsonCoasterRepository.updateCoaster(coasterId, newCoasterData);
+    return this.jsonCoasterRepository.updateCoaster(coasterId, newCoasterData) as Coaster;
   }
 
   /**
@@ -39,7 +41,7 @@ class CoasterService implements ICoasterService {
    * @returns {Wagon} added wagon
    */
   public addWagon(coasterId: number, wagonToAdd: Wagon): Wagon {
-    return this.jsonCoasterRepository.addWagon(coasterId, wagonToAdd);
+    return this.jsonCoasterRepository.addWagon(coasterId, wagonToAdd) as Wagon;
   }
 
   /**
@@ -49,7 +51,7 @@ class CoasterService implements ICoasterService {
    * @returns {Wagon} deleted wagon
    */
   public deleteWagon(coasterId: number, wagonId: number): Wagon {
-    return this.jsonCoasterRepository.deleteWagon(coasterId, wagonId);
+    return this.jsonCoasterRepository.deleteWagon(coasterId, wagonId) as Wagon;
   }
 }
 

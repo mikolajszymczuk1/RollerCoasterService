@@ -7,18 +7,23 @@ import Logger from '@/infrastructure/logger';
 import { ResponseCodes } from '@/app/enums/ResponseCodes';
 import Coaster from '@/domain/entities/Coaster.entity';
 import Wagon from '@/domain/entities/Wagon.entity';
+import type { IRedisService } from '@/domain/services/redis/IRedis.service';
+import { RedisChannels } from '@/enums/RedisChannels';
 
 @injectable()
 class CoasterController {
   private readonly logger: Logger;
   private readonly coasterService: ICoasterService;
+  private readonly redisService: IRedisService;
 
   constructor(
     @inject(ContainerTypes.Logger) logger: Logger,
     @inject(ContainerTypes.CoasterService) coasterService: ICoasterService,
+    @inject(ContainerTypes.RedisService) redisService: IRedisService,
   ) {
     this.logger = logger;
     this.coasterService = coasterService;
+    this.redisService = redisService;
   }
 
   /**
@@ -32,6 +37,12 @@ class CoasterController {
       const coasterToAdd = new Coaster(-1, numberOfPersonnel, numberOfCustomers, lengthOfRoute, hoursFrom, hoursTo);
 
       const savedCoaster = this.coasterService.addCoaster(coasterToAdd);
+
+      try {
+        await this.redisService.addCoasterPublish(savedCoaster);
+      } catch (err) {
+        this.logger.error(`Error while publish changes to: ${RedisChannels.COASTER_ADD}`);
+      }
 
       res.status(ResponseCodes.CREATED).json(instanceToPlain(savedCoaster));
     } catch (err) {
@@ -53,6 +64,12 @@ class CoasterController {
 
       const updatedCoaster = this.coasterService.updateCoaster(coasterId, coasterToUpdate);
 
+      try {
+        await this.redisService.updateCoasterPublish(coasterId, updatedCoaster);
+      } catch (err) {
+        this.logger.error(`Error while publish changes to: ${RedisChannels.COASTER_UPDATE}`);
+      }
+
       res.status(ResponseCodes.OK).json(updatedCoaster);
     } catch (err) {
       this.logger.error(`Error updating coaster: ${err}`);
@@ -73,6 +90,12 @@ class CoasterController {
 
       const savedWagon = this.coasterService.addWagon(coasterId, wagonToAdd);
 
+      try {
+        await this.redisService.addWagonPublish(coasterId, savedWagon);
+      } catch (err) {
+        this.logger.error(`Error while publish changes to: ${RedisChannels.WAGON_ADD}`);
+      }
+
       res.status(ResponseCodes.CREATED).json(savedWagon);
     } catch (err) {
       this.logger.error(`Error adding wagon: ${err}`);
@@ -90,6 +113,12 @@ class CoasterController {
       const { coasterId, wagonId } = req.params;
 
       const deletedWagon = this.coasterService.deleteWagon(parseInt(coasterId), parseInt(wagonId));
+
+      try {
+        await this.redisService.deleteWagonPublish(parseInt(coasterId), parseInt(wagonId));
+      } catch (err) {
+        this.logger.error(`Error while publish changes to: ${RedisChannels.WAGON_REMOVE}`);
+      }
 
       res.status(ResponseCodes.OK).json(deletedWagon);
     } catch (err) {
