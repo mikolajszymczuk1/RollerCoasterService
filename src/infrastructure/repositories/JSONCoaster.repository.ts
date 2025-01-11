@@ -20,7 +20,7 @@ class JSONCoasterRepository implements ICoasterRepository<Coaster | Wagon> {
    */
   public addCoaster(coasterToAdd: Coaster): Coaster {
     const coastersMap = this.jsonClient.readData();
-    const id = this.jsonClient.nextCoasterId;
+    const id = coasterToAdd.id === '' ? this.nextCoasterId() : coasterToAdd.id;
     const coaster = coasterToAdd;
     coaster.id = id;
     coastersMap.set(id, coaster);
@@ -30,11 +30,11 @@ class JSONCoasterRepository implements ICoasterRepository<Coaster | Wagon> {
 
   /**
    * Update coaster data
-   * @param {number} coasterId coaster id
+   * @param {string} coasterId coaster id
    * @param {Coaster} newCoasterData new coaster data to save
    * @returns {Coaster} updated coaster
    */
-  public updateCoaster(coasterId: number, newCoasterData: Coaster): Coaster {
+  public updateCoaster(coasterId: string, newCoasterData: Coaster): Coaster {
     const coastersMap = this.jsonClient.readData();
     const coaster = coastersMap.get(coasterId);
 
@@ -55,7 +55,7 @@ class JSONCoasterRepository implements ICoasterRepository<Coaster | Wagon> {
    * @param {Wagon} wagonToAdd wagon data to add
    * @returns {Wagon} added wagon
    */
-  public addWagon(coasterId: number, wagonToAdd: Wagon): Wagon {
+  public addWagon(coasterId: string, wagonToAdd: Wagon): Wagon {
     const coastersMap = this.jsonClient.readData();
     const coaster = coastersMap.get(coasterId);
 
@@ -63,7 +63,7 @@ class JSONCoasterRepository implements ICoasterRepository<Coaster | Wagon> {
       throw new Error(`Coaster with id ${coasterId} not found`);
     }
 
-    const id = this.jsonClient.nextWagonId;
+    const id = wagonToAdd.id === '' ? this.nextWagonId() : wagonToAdd.id;
     const wagon = wagonToAdd;
     wagon.id = id;
     coaster.wagons.push(wagon);
@@ -75,11 +75,11 @@ class JSONCoasterRepository implements ICoasterRepository<Coaster | Wagon> {
 
   /**
    * Delete single wagon
-   * @param {number} coasterId coaster id
-   * @param {number} wagonId wagon id
+   * @param {string} coasterId coaster id
+   * @param {string} wagonId wagon id
    * @returns {Wagon} deleted wagon
    */
-  public deleteWagon(coasterId: number, wagonId: number): Wagon {
+  public deleteWagon(coasterId: string, wagonId: string): Wagon {
     const coastersMap = this.jsonClient.readData();
     const coaster = coastersMap.get(coasterId);
 
@@ -97,6 +97,22 @@ class JSONCoasterRepository implements ICoasterRepository<Coaster | Wagon> {
     coastersMap.set(coasterId, coaster);
     this.jsonClient.writeData(coastersMap);
     return wagon;
+  }
+
+  /**
+   * Get next coaster id value (local id in timestamp style, for synchronization process)
+   * @returns {string} new coaster id
+   */
+  public nextCoasterId(): string {
+    return `coaster:${new Date().getTime()}`;
+  }
+
+  /**
+   * Get next wagon id value (local id in timestamp style, for synchronization process)
+   * @returns {string} new wagon id
+   */
+  public nextWagonId(): string {
+    return `wagon:${new Date().getTime()}`;
   }
 }
 

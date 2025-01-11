@@ -34,7 +34,13 @@ class CoasterController {
   public async addCoasterAction(req: Request, res: Response): Promise<void> {
     try {
       const { numberOfPersonnel, numberOfCustomers, lengthOfRoute, hoursFrom, hoursTo } = req.body;
-      const coasterToAdd = new Coaster(-1, numberOfPersonnel, numberOfCustomers, lengthOfRoute, hoursFrom, hoursTo);
+      const coasterToAdd = new Coaster('', numberOfPersonnel, numberOfCustomers, lengthOfRoute, hoursFrom, hoursTo);
+
+      try {
+        coasterToAdd.id = await this.redisService.nextCoasterId();
+      } catch (err) {
+        this.logger.warn(`Can't set id from redis, set local coaster id`);
+      }
 
       const savedCoaster = this.coasterService.addCoaster(coasterToAdd);
 
@@ -58,9 +64,16 @@ class CoasterController {
    */
   public async updateCoasterAction(req: Request, res: Response): Promise<void> {
     try {
-      const coasterId = parseInt(req.params.coasterId);
+      const coasterId = req.params.coasterId;
       const { numberOfPersonnel, numberOfCustomers, lengthOfRoute, hoursFrom, hoursTo } = req.body;
-      const coasterToUpdate = new Coaster(-1, numberOfPersonnel, numberOfCustomers, lengthOfRoute, hoursFrom, hoursTo);
+      const coasterToUpdate = new Coaster(
+        coasterId,
+        numberOfPersonnel,
+        numberOfCustomers,
+        lengthOfRoute,
+        hoursFrom,
+        hoursTo,
+      );
 
       const updatedCoaster = this.coasterService.updateCoaster(coasterId, coasterToUpdate);
 
@@ -84,9 +97,15 @@ class CoasterController {
    */
   public async addWagonAction(req: Request, res: Response): Promise<void> {
     try {
-      const coasterId = parseInt(req.params.coasterId);
+      const coasterId = req.params.coasterId;
       const { numberOfSeats, speed } = req.body;
-      const wagonToAdd = new Wagon(-1, numberOfSeats, speed);
+      const wagonToAdd = new Wagon('', numberOfSeats, speed);
+
+      try {
+        wagonToAdd.id = await this.redisService.nextWagonId();
+      } catch (err) {
+        this.logger.warn(`Can't set id from redis, set local wagon id`);
+      }
 
       const savedWagon = this.coasterService.addWagon(coasterId, wagonToAdd);
 
@@ -112,10 +131,10 @@ class CoasterController {
     try {
       const { coasterId, wagonId } = req.params;
 
-      const deletedWagon = this.coasterService.deleteWagon(parseInt(coasterId), parseInt(wagonId));
+      const deletedWagon = this.coasterService.deleteWagon(coasterId, wagonId);
 
       try {
-        await this.redisService.deleteWagonPublish(parseInt(coasterId), parseInt(wagonId));
+        await this.redisService.deleteWagonPublish(coasterId, wagonId);
       } catch (err) {
         this.logger.error(`Error while publish changes to: ${RedisChannels.WAGON_REMOVE}`);
       }

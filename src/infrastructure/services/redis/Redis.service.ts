@@ -29,44 +29,103 @@ class RedisService implements IRedisService {
     this.leaderManagerService = leaderManagerService;
   }
 
+  /**
+   * Add coaster in redis
+   * @param {Coaster} coasterToAdd coaster to add
+   * @returns {Promise<Coaster>} added coaster object
+   */
   private async addCoaster(coasterToAdd: Coaster): Promise<Coaster> {
     return (await this.redisCoasterRepository.addCoaster(coasterToAdd)) as Coaster;
   }
 
-  private async updateCoaster(coasterId: number, newCoasterData: Coaster): Promise<Coaster> {
+  /**
+   * Update coaster in redis
+   * @param {string} coasterId coaster id
+   * @param {Coaster} newCoasterData new coaster data
+   * @returns {Promise<Coaster>} updated coaster object
+   */
+  private async updateCoaster(coasterId: string, newCoasterData: Coaster): Promise<Coaster> {
     return (await this.redisCoasterRepository.updateCoaster(coasterId, newCoasterData)) as Coaster;
   }
 
-  private async addWagon(coasterId: number, wagonToAdd: Wagon): Promise<Wagon> {
+  /**
+   * Add wagon to coaster in redis
+   * @param {string} coasterId coaster id
+   * @param {Wagon} wagonToAdd wagon to add
+   * @returns {Promise<Wagon>} added wagon object
+   */
+  private async addWagon(coasterId: string, wagonToAdd: Wagon): Promise<Wagon> {
     return (await this.redisCoasterRepository.addWagon(coasterId, wagonToAdd)) as Wagon;
   }
 
-  private async deleteWagon(coasterId: number, wagonId: number): Promise<Wagon> {
+  /**
+   * Delete wagon from coaster in redis
+   * @param {string} coasterId coaster id
+   * @param {string} wagonId wagon id
+   * @returns {Promise<Wagon>} deleted wagon object
+   */
+  private async deleteWagon(coasterId: string, wagonId: string): Promise<Wagon> {
     return (await this.redisCoasterRepository.deleteWagon(coasterId, wagonId)) as Wagon;
   }
 
+  /**
+   * Get next coaster id based on redis central database
+   * @returns {Promise<string>} new coaster id
+   */
+  public async nextCoasterId(): Promise<string> {
+    return await this.redisCoasterRepository.nextCoasterId();
+  }
+
+  /**
+   * Get next wagon id based on redis central database
+   * @returns {Promise<string>} new wagon id
+   */
+  public async nextWagonId(): Promise<string> {
+    return await this.redisCoasterRepository.nextWagonId();
+  }
+
+  /**
+   * Publish add coaster message
+   * @param {Coaster} coasterToAdd coaster to add
+   */
   public async addCoasterPublish(coasterToAdd: Coaster): Promise<void> {
     await this.redisClient.publish(RedisChannels.COASTER_ADD, JSON.stringify(instanceToPlain(coasterToAdd)));
   }
 
-  public async updateCoasterPublish(coasterId: number, newCoasterData: Coaster): Promise<void> {
+  /**
+   * Publish update coaster message
+   * @param {string} coasterId coaster id
+   * @param {Coaster} newCoasterData new coaster data
+   */
+  public async updateCoasterPublish(coasterId: string, newCoasterData: Coaster): Promise<void> {
     await this.redisClient.publish(
       RedisChannels.COASTER_UPDATE,
       JSON.stringify({ coasterId, data: instanceToPlain(newCoasterData) }),
     );
   }
 
-  public async addWagonPublish(coasterId: number, wagonToAdd: Wagon): Promise<void> {
+  /**
+   * Publish add wagon message
+   * @param {string} coasterId coaster id
+   * @param {Wagon} wagonToAdd wagon to add
+   */
+  public async addWagonPublish(coasterId: string, wagonToAdd: Wagon): Promise<void> {
     await this.redisClient.publish(
       RedisChannels.WAGON_ADD,
       JSON.stringify({ coasterId, data: instanceToPlain(wagonToAdd) }),
     );
   }
 
-  public async deleteWagonPublish(coasterId: number, wagonId: number): Promise<void> {
+  /**
+   * Publish delete wagon message
+   * @param {string} coasterId coaster id
+   * @param {string} wagonId wagon id
+   */
+  public async deleteWagonPublish(coasterId: string, wagonId: string): Promise<void> {
     await this.redisClient.publish(RedisChannels.WAGON_REMOVE, JSON.stringify({ coasterId, wagonId }));
   }
 
+  /** Setup all service subscribers */
   public async initSubscribers(): Promise<void> {
     await this.redisClient.subscribe(RedisChannels.COASTER_ADD, async (message: string): Promise<void> => {
       if (this.leaderManagerService.leaderStatus) {

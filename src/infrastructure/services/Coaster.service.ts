@@ -26,31 +26,31 @@ class CoasterService implements ICoasterService {
 
   /**
    * Update coaster data + pub changes to redis
-   * @param {number} coasterId coaster id
+   * @param {string} coasterId coaster id
    * @param {Coaster} newCoasterData new coaster data to save
    * @returns {Coaster} updated coaster
    */
-  public updateCoaster(coasterId: number, newCoasterData: Coaster): Coaster {
+  public updateCoaster(coasterId: string, newCoasterData: Coaster): Coaster {
     return this.jsonCoasterRepository.updateCoaster(coasterId, newCoasterData) as Coaster;
   }
 
   /**
    * Add new wagon to coaster + pub changes to redis
-   * @param {number} coasterId coaster id
+   * @param {string} coasterId coaster id
    * @param {Wagon} wagonToAdd wagon data to add
    * @returns {Wagon} added wagon
    */
-  public addWagon(coasterId: number, wagonToAdd: Wagon): Wagon {
+  public addWagon(coasterId: string, wagonToAdd: Wagon): Wagon {
     return this.jsonCoasterRepository.addWagon(coasterId, wagonToAdd) as Wagon;
   }
 
   /**
    * Delete single wagon + pub changes to redis
-   * @param {number} coasterId coaster id
-   * @param {number} wagonId wagon id
+   * @param {string} coasterId coaster id
+   * @param {string} wagonId wagon id
    * @returns {Wagon} deleted wagon
    */
-  public deleteWagon(coasterId: number, wagonId: number): Wagon {
+  public deleteWagon(coasterId: string, wagonId: string): Wagon {
     return this.jsonCoasterRepository.deleteWagon(coasterId, wagonId) as Wagon;
   }
 }
