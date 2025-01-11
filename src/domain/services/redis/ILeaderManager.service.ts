@@ -1,3 +1,4 @@
 export interface ILeaderManagerService {
-  initLeadershipCheck(): void;
+  get leaderStatus(): boolean;
+  initLeadershipCheck(): Promise<void>;
 }
