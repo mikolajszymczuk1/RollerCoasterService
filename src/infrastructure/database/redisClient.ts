@@ -22,9 +22,7 @@ class RedisClient {
 
     this.logger = logger;
 
-    this.client.on('error', (err) => {
-      this.logger.error(`Redis client error: ${err}`);
-    });
+    this.initRedisEvents();
   }
 
   /** Get redis client */
@@ -38,6 +36,21 @@ class RedisClient {
 
   public get redisSubscriber(): RedisClientType {
     return this.subscriber;
+  }
+
+  /** Set all redis events to listen */
+  private initRedisEvents(): void {
+    this.client.on('connect', (): void => {
+      this.logger.info('Connected to Redis');
+    });
+
+    this.client.on('reconnecting', (): void => {
+      this.logger.warn('Reconnect to Redis');
+    });
+
+    this.client.on('error', (err): void => {
+      this.logger.error(`Redis client error: ${err}`);
+    });
   }
 
   /** Connect to redis service */
