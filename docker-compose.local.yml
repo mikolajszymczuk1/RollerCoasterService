@@ -1,5 +1,6 @@
 services:
-  app:
+  service1:
+    container_name: RollerCoasterService_NodeA
     build:
       context: .
       dockerfile: DockerFile.local
@@ -12,9 +13,23 @@ services:
       - DATABASE=${DATABASE}
     ports:
       - "${PORT}:${PORT}"
-    volumes:
-      - ./logs:/app/logs
-      - ./src/data:/app/src/data
+    networks:
+      - custom_network
+
+  service2:
+    container_name: RollerCoasterService_NodeB
+    build:
+      context: .
+      dockerfile: DockerFile.local
+      args:
+        - PORT=${PORT2}
+    environment:
+      - ENV_TYPE=${ENV_TYPE}
+      - PORT=${PORT2}
+      - REDIS_URL=${REDIS_URL}
+      - DATABASE=${DATABASE}
+    ports:
+      - "${PORT2}:${PORT2}"
     networks:
       - custom_network
 

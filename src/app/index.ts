@@ -10,14 +10,14 @@ import Logger from '@/infrastructure/logger';
 import RedisClient from '@/infrastructure/database/redisClient';
 import rollercoasterRouter from '@/app/routes/rollercoaster.router';
 import type { ILeaderManagerService } from '@/domain/services/redis/ILeaderManager.service';
-import type { IRedisService } from '@/domain/services/redis/IRedis.service';
+import type { ISubManagerService } from '@/domain/services/redis/ISubManager.service';
 
 @injectable()
 export class App {
   private readonly logger: Logger;
   private readonly redisClient: RedisClient;
   private readonly leaderManagerService: ILeaderManagerService;
-  private readonly redisService: IRedisService;
+  private readonly subManagerService: ISubManagerService;
 
   public app: Application;
 
@@ -25,12 +25,13 @@ export class App {
     @inject(ContainerTypes.Logger) logger: Logger,
     @inject(ContainerTypes.RedisClient) redisClient: RedisClient,
     @inject(ContainerTypes.LeaderManagerService) leaderManagerService: ILeaderManagerService,
-    @inject(ContainerTypes.RedisService) redisService: IRedisService,
+    @inject(ContainerTypes.SubManagerService) subManagerService: ISubManagerService,
   ) {
     this.logger = logger;
     this.redisClient = redisClient;
     this.leaderManagerService = leaderManagerService;
-    this.redisService = redisService;
+    this.subManagerService = subManagerService;
+
     this.app = express();
     this.logger.info('App instance created ✅');
 
@@ -56,7 +57,7 @@ export class App {
   /** Initialize all app services */
   public async initializeServices(): Promise<void> {
     await this.redisClient.connect();
-    await this.redisService.initSubscribers();
+    await this.subManagerService.initSubscribers();
     await this.leaderManagerService.initLeadershipCheck();
     this.logger.info('App services loaded ✅');
   }

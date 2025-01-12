@@ -9,4 +9,5 @@ export const ContainerTypes = {
   CoasterService: Symbol.for('CoasterService'),
   LeaderManagerService: Symbol.for('LeaderManagerService'),
   RedisService: Symbol.for('RedisService'),
+  SubManagerService: Symbol.for('SubManagerService'),
 };

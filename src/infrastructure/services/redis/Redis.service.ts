@@ -5,28 +5,20 @@ import Wagon from '@/domain/entities/Wagon.entity';
 import { ContainerTypes } from '@/types/common';
 import type { ICoasterRepository } from '@/domain/repositories/ICoaster.repository';
 import RedisClient from '@/infrastructure/database/redisClient';
-import { instanceToPlain, plainToInstance } from 'class-transformer';
-import type { ILeaderManagerService } from '@/domain/services/redis/ILeaderManager.service';
-import Logger from '@/infrastructure/logger';
+import { instanceToPlain } from 'class-transformer';
 import { RedisChannels } from '@/enums/RedisChannels';
 
 @injectable()
 class RedisService implements IRedisService {
-  private readonly logger: Logger;
   private readonly redisCoasterRepository: ICoasterRepository<Promise<Coaster | Wagon>>;
   private readonly redisClient: RedisClient;
-  private readonly leaderManagerService: ILeaderManagerService;
 
   constructor(
-    @inject(ContainerTypes.Logger) logger: Logger,
     @inject(ContainerTypes.RedisCoasterRepository) redisCoasterRepository: ICoasterRepository<Promise<Coaster | Wagon>>,
     @inject(ContainerTypes.RedisClient) redisClient: RedisClient,
-    @inject(ContainerTypes.LeaderManagerService) leaderManagerService: ILeaderManagerService,
   ) {
-    this.logger = logger;
     this.redisCoasterRepository = redisCoasterRepository;
     this.redisClient = redisClient;
-    this.leaderManagerService = leaderManagerService;
   }
 
   /**
@@ -34,7 +26,7 @@ class RedisService implements IRedisService {
    * @param {Coaster} coasterToAdd coaster to add
    * @returns {Promise<Coaster>} added coaster object
    */
-  private async addCoaster(coasterToAdd: Coaster): Promise<Coaster> {
+  public async addCoaster(coasterToAdd: Coaster): Promise<Coaster> {
     return (await this.redisCoasterRepository.addCoaster(coasterToAdd)) as Coaster;
   }
 
@@ -44,7 +36,7 @@ class RedisService implements IRedisService {
    * @param {Coaster} newCoasterData new coaster data
    * @returns {Promise<Coaster>} updated coaster object
    */
-  private async updateCoaster(coasterId: string, newCoasterData: Coaster): Promise<Coaster> {
+  public async updateCoaster(coasterId: string, newCoasterData: Coaster): Promise<Coaster> {
     return (await this.redisCoasterRepository.updateCoaster(coasterId, newCoasterData)) as Coaster;
   }
 
@@ -54,7 +46,7 @@ class RedisService implements IRedisService {
    * @param {Wagon} wagonToAdd wagon to add
    * @returns {Promise<Wagon>} added wagon object
    */
-  private async addWagon(coasterId: string, wagonToAdd: Wagon): Promise<Wagon> {
+  public async addWagon(coasterId: string, wagonToAdd: Wagon): Promise<Wagon> {
     return (await this.redisCoasterRepository.addWagon(coasterId, wagonToAdd)) as Wagon;
   }
 
@@ -64,7 +56,7 @@ class RedisService implements IRedisService {
    * @param {string} wagonId wagon id
    * @returns {Promise<Wagon>} deleted wagon object
    */
-  private async deleteWagon(coasterId: string, wagonId: string): Promise<Wagon> {
+  public async deleteWagon(coasterId: string, wagonId: string): Promise<Wagon> {
     return (await this.redisCoasterRepository.deleteWagon(coasterId, wagonId)) as Wagon;
   }
 
@@ -134,109 +126,6 @@ class RedisService implements IRedisService {
       isSync ? RedisChannels.SYNCHRONIZE_WAGON_REMOVE : RedisChannels.WAGON_REMOVE,
       JSON.stringify({ nodeId, coasterId, wagonId }),
     );
-  }
-
-  /** Setup all service subscribers */
-  public async initSubscribers(): Promise<void> {
-    /** Leader subscribers */
-    /** -------------------------------------------- */
-
-    await this.redisClient.subscribe(RedisChannels.COASTER_ADD, async (message: string): Promise<void> => {
-      if (!this.leaderManagerService.leaderStatus) {
-        return;
-      }
-
-      try {
-        const obj = JSON.parse(message);
-        const coaster = plainToInstance(Coaster, obj.data as Coaster);
-        await this.addCoaster(coaster);
-        await this.addCoasterPublish(coaster, true, obj.nodeId);
-      } catch (err) {
-        this.logger.error(`Redis operation error [${RedisChannels.COASTER_ADD}]: ${err}`);
-      }
-    });
-
-    await this.redisClient.subscribe(RedisChannels.COASTER_UPDATE, async (message: string): Promise<void> => {
-      if (!this.leaderManagerService.leaderStatus) {
-        return;
-      }
-
-      try {
-        const obj = JSON.parse(message);
-        const coaster = plainToInstance(Coaster, obj.data as Coaster);
-        await this.updateCoaster(obj.coasterId, coaster);
-        await this.updateCoasterPublish(obj.coasterId, coaster, true, obj.nodeId);
-      } catch (err) {
-        this.logger.error(`Redis operation error [${RedisChannels.COASTER_UPDATE}]: ${err}`);
-      }
-    });
-
-    await this.redisClient.subscribe(RedisChannels.WAGON_ADD, async (message: string): Promise<void> => {
-      if (!this.leaderManagerService.leaderStatus) {
-        return;
-      }
-
-      try {
-        const obj = JSON.parse(message);
-        const wagon = plainToInstance(Wagon, obj.data as Wagon);
-        await this.addWagon(obj.coasterId, wagon);
-        await this.addWagonPublish(obj.coasterId, wagon, true, obj.nodeId);
-      } catch (err) {
-        this.logger.error(`Redis operation error [${RedisChannels.WAGON_ADD}]: ${err}`);
-      }
-    });
-
-    await this.redisClient.subscribe(RedisChannels.WAGON_REMOVE, async (message: string): Promise<void> => {
-      if (!this.leaderManagerService.leaderStatus) {
-        return;
-      }
-
-      try {
-        const obj = JSON.parse(message);
-        await this.deleteWagon(obj.coasterId, obj.wagonId);
-        await this.deleteWagonPublish(obj.coasterId, obj.wagonId, true, obj.nodeId);
-      } catch (err) {
-        this.logger.error(`Redis operation error [${RedisChannels.WAGON_REMOVE}]: ${err}`);
-      }
-    });
-
-    /** Normal node subscribers */
-    /** -------------------------------------------- */
-
-    await this.redisClient.subscribe(RedisChannels.SYNCHRONIZE_COASTER_ADD, async (message: string): Promise<void> => {
-      try {
-        console.log(message);
-      } catch (err) {
-        this.logger.error(`Redis operation error [${RedisChannels.SYNCHRONIZE_COASTER_ADD}]: ${err}`);
-      }
-    });
-
-    await this.redisClient.subscribe(
-      RedisChannels.SYNCHRONIZE_COASTER_UPDATE,
-      async (message: string): Promise<void> => {
-        try {
-          console.log(message);
-        } catch (err) {
-          this.logger.error(`Redis operation error [${RedisChannels.SYNCHRONIZE_COASTER_UPDATE}]: ${err}`);
-        }
-      },
-    );
-
-    await this.redisClient.subscribe(RedisChannels.SYNCHRONIZE_WAGON_ADD, async (message: string): Promise<void> => {
-      try {
-        console.log(message);
-      } catch (err) {
-        this.logger.error(`Redis operation error [${RedisChannels.SYNCHRONIZE_WAGON_ADD}]: ${err}`);
-      }
-    });
-
-    await this.redisClient.subscribe(RedisChannels.SYNCHRONIZE_WAGON_REMOVE, async (message: string): Promise<void> => {
-      try {
-        console.log(message);
-      } catch (err) {
-        this.logger.error(`Redis operation error [${RedisChannels.SYNCHRONIZE_WAGON_REMOVE}]: ${err}`);
-      }
-    });
   }
 }
 
