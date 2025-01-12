@@ -11,3 +11,5 @@ export const ContainerTypes = {
   RedisService: Symbol.for('RedisService'),
   SubManagerService: Symbol.for('SubManagerService'),
 };
+
+export type OperationType = 'addCoaster' | 'updateCoaster' | 'addWagon' | 'deleteWagon';
