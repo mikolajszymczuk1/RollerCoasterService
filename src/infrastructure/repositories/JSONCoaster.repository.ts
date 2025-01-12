@@ -104,7 +104,7 @@ class JSONCoasterRepository implements ICoasterRepository<Coaster | Wagon> {
    * @returns {string} new coaster id
    */
   public nextCoasterId(): string {
-    return `coaster:${new Date().getTime()}`;
+    return `coaster:local:${new Date().getTime()}`;
   }
 
   /**
@@ -112,7 +112,7 @@ class JSONCoasterRepository implements ICoasterRepository<Coaster | Wagon> {
    * @returns {string} new wagon id
    */
   public nextWagonId(): string {
-    return `wagon:${new Date().getTime()}`;
+    return `wagon:local:${new Date().getTime()}`;
   }
 }
 
