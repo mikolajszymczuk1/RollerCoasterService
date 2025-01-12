@@ -29,6 +29,10 @@ class LeaderManagerService implements ILeaderManagerService {
     return this.isLeader;
   }
 
+  public get id(): string {
+    return this.leaderId;
+  }
+
   /** Try to set leader status (set leader key with specific TTL) */
   private async tryToBecomeLeader(): Promise<void> {
     try {
