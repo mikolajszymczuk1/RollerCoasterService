@@ -1,7 +1,7 @@
 import { Expose } from 'class-transformer';
 import type { OperationType } from '@/types/common';
 
-class OperationLog {
+class Operation {
   @Expose()
   timestamp: number;
 
@@ -18,4 +18,4 @@ class OperationLog {
   }
 }
 
-export default OperationLog;
+export default Operation;

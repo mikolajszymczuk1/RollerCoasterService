@@ -1,17 +1,15 @@
 import { injectable, inject } from 'inversify';
 import type { ICoasterService } from '@/domain/services/ICoaster.service';
-import type { ICoasterRepository } from '@/domain/repositories/ICoaster.repository';
+import type { IJSONCoasterRepository } from '@/domain/repositories/IJSONCoaster.repository';
 import { ContainerTypes } from '@/types/common';
 import Coaster from '@/domain/entities/Coaster.entity';
 import Wagon from '@/domain/entities/Wagon.entity';
 
 @injectable()
 class CoasterService implements ICoasterService {
-  private readonly jsonCoasterRepository: ICoasterRepository<Coaster | Wagon>;
+  private readonly jsonCoasterRepository: IJSONCoasterRepository;
 
-  constructor(
-    @inject(ContainerTypes.JSONCoasterRepository) jsonCoasterRepository: ICoasterRepository<Coaster | Wagon>,
-  ) {
+  constructor(@inject(ContainerTypes.JSONCoasterRepository) jsonCoasterRepository: IJSONCoasterRepository) {
     this.jsonCoasterRepository = jsonCoasterRepository;
   }
 
@@ -21,7 +19,7 @@ class CoasterService implements ICoasterService {
    * @returns {Coaster} added coaster
    */
   public addCoaster(coasterToAdd: Coaster): Coaster {
-    return this.jsonCoasterRepository.addCoaster(coasterToAdd) as Coaster;
+    return this.jsonCoasterRepository.addCoaster(coasterToAdd);
   }
 
   /**
@@ -31,7 +29,7 @@ class CoasterService implements ICoasterService {
    * @returns {Coaster} updated coaster
    */
   public updateCoaster(coasterId: string, newCoasterData: Coaster): Coaster {
-    return this.jsonCoasterRepository.updateCoaster(coasterId, newCoasterData) as Coaster;
+    return this.jsonCoasterRepository.updateCoaster(coasterId, newCoasterData);
   }
 
   /**
@@ -41,7 +39,7 @@ class CoasterService implements ICoasterService {
    * @returns {Wagon} added wagon
    */
   public addWagon(coasterId: string, wagonToAdd: Wagon): Wagon {
-    return this.jsonCoasterRepository.addWagon(coasterId, wagonToAdd) as Wagon;
+    return this.jsonCoasterRepository.addWagon(coasterId, wagonToAdd);
   }
 
   /**
@@ -51,7 +49,15 @@ class CoasterService implements ICoasterService {
    * @returns {Wagon} deleted wagon
    */
   public deleteWagon(coasterId: string, wagonId: string): Wagon {
-    return this.jsonCoasterRepository.deleteWagon(coasterId, wagonId) as Wagon;
+    return this.jsonCoasterRepository.deleteWagon(coasterId, wagonId);
+  }
+
+  /**
+   * Update synchronization time
+   * @param {number} timestamp new timestamp value
+   */
+  public updateSynchronizationTime(timestamp: number): void {
+    this.jsonCoasterRepository.updateSynchronizationTime(timestamp);
   }
 }
 

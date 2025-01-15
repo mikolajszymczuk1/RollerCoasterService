@@ -6,6 +6,7 @@ import type { ILoggerService } from '@/domain/services/ILogger.service';
 import { ContainerTypes } from '@/types/common';
 import Coaster from '@/domain/entities/Coaster.entity';
 import type { IJSONClient } from '@/domain/database/IJSON.client';
+import SyncTime from '@/domain/entities/SyncTime.entity';
 
 @injectable()
 class JSONClient implements IJSONClient {
@@ -13,16 +14,14 @@ class JSONClient implements IJSONClient {
   private readonly dirPath: string;
   private readonly filePath: string;
   private readonly syncTimePath: string;
-  private readonly leaderLogsPath: string;
-  private readonly localLogsPath: string;
+  private readonly localOperationsPath: string;
 
   constructor(@inject(ContainerTypes.Logger) logger: ILoggerService) {
     this.logger = logger;
     this.dirPath = path.resolve(__dirname, '../src/data');
     this.filePath = path.resolve(__dirname, `../src/data/data.${process.env.ENV_TYPE}.json`);
     this.syncTimePath = path.resolve(__dirname, `../src/data/synchronizationTime.${process.env.ENV_TYPE}.json`);
-    this.leaderLogsPath = path.resolve(__dirname, `../src/data/leader.logs.${process.env.ENV_TYPE}.json`);
-    this.localLogsPath = path.resolve(__dirname, `../data/local.logs.${process.env.ENV_TYPE}.json`);
+    this.localOperationsPath = path.resolve(__dirname, `../data/local.operations.${process.env.ENV_TYPE}.json`);
 
     try {
       if (!fs.existsSync(this.dirPath)) {
@@ -72,6 +71,44 @@ class JSONClient implements IJSONClient {
       fs.writeFileSync(this.filePath, JSON.stringify(instanceToPlain(coasters), null, 2));
     } catch (err) {
       this.logger.error(`Error writing JSON data: ${err}`);
+      throw err;
+    }
+  }
+
+  /**
+   * Read synchronization time from file for local node
+   * @returns {SyncTime} Sync time
+   */
+  public readSynchronizationTime(): SyncTime {
+    try {
+      if (!fs.existsSync(this.syncTimePath)) {
+        const newSyncTime = new SyncTime(0);
+        fs.writeFileSync(this.syncTimePath, JSON.stringify(instanceToPlain(newSyncTime), null, 2));
+      }
+
+      const data = fs.readFileSync(this.syncTimePath, 'utf8');
+      const syncTime = plainToInstance(SyncTime, JSON.parse(data) as SyncTime);
+      return syncTime;
+    } catch (err) {
+      this.logger.error(`Error reading synchronization time: ${err}`);
+      throw err;
+    }
+  }
+
+  /**
+   * Update synchronization time value
+   * @param {SyncTime} syncTime new sync time data
+   */
+  public updateSynchronizationTime(syncTime: SyncTime): void {
+    try {
+      if (!fs.existsSync(this.syncTimePath)) {
+        const newSyncTime = new SyncTime(0);
+        fs.writeFileSync(this.syncTimePath, JSON.stringify(instanceToPlain(newSyncTime), null, 2));
+      }
+
+      fs.writeFileSync(this.syncTimePath, JSON.stringify(instanceToPlain(syncTime), null, 2));
+    } catch (err) {
+      this.logger.error(`Error updating synchronization time: ${err}`);
       throw err;
     }
   }

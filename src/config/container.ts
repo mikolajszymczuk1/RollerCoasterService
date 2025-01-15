@@ -2,16 +2,15 @@ import { Container } from 'inversify';
 import { ContainerTypes } from '@/types/common';
 import App from '@/app';
 import CoasterController from '@/app/controllers/Coaster.controller';
-import Coaster from '@/domain/entities/Coaster.entity';
-import Wagon from '@/domain/entities/Wagon.entity';
 import type { ILoggerService } from '@/domain/services/ILogger.service';
-import Logger from '@/infrastructure/Logger.service';
+import Logger from '@/infrastructure/services/Logger.service';
 import type { IRedisClient } from '@/domain/database/IRedis.client';
 import RedisClient from '@/infrastructure/database/Redis.client';
 import type { IJSONClient } from '@/domain/database/IJSON.client';
 import JSONClient from '@/infrastructure/database/JSON.client';
-import type { ICoasterRepository } from '@/domain/repositories/ICoaster.repository';
+import type { IJSONCoasterRepository } from '@/domain/repositories/IJSONCoaster.repository';
 import JSONCoasterRepository from '@/infrastructure/repositories/JSONCoaster.repository';
+import type { IRedisCoasterRepository } from '@/domain/repositories/IRedisCoaster.repository';
 import RedisCoasterRepository from '@/infrastructure/repositories/RedisCoaster.repository';
 import type { ICoasterService } from '@/domain/services/ICoaster.service';
 import CoasterService from '@/infrastructure/services/Coaster.service';
@@ -34,11 +33,9 @@ container.bind<IJSONClient>(ContainerTypes.JSONClient).to(JSONClient).inSingleto
 
 container.bind<CoasterController>(ContainerTypes.CoasterController).to(CoasterController);
 
-container.bind<ICoasterRepository<Coaster | Wagon>>(ContainerTypes.JSONCoasterRepository).to(JSONCoasterRepository);
+container.bind<IJSONCoasterRepository>(ContainerTypes.JSONCoasterRepository).to(JSONCoasterRepository);
 
-container
-  .bind<ICoasterRepository<Promise<Coaster | Wagon>>>(ContainerTypes.RedisCoasterRepository)
-  .to(RedisCoasterRepository);
+container.bind<IRedisCoasterRepository>(ContainerTypes.RedisCoasterRepository).to(RedisCoasterRepository);
 
 container.bind<ICoasterService>(ContainerTypes.CoasterService).to(CoasterService);
 

@@ -1,7 +1,7 @@
 import { container } from '@/config/container';
 import { ContainerTypes } from '@/types/common';
 import App from '@/app';
-import { ILoggerService } from '@/domain/services/ILogger.service';
+import type { ILoggerService } from '@/domain/services/ILogger.service';
 import { loadEnvironment } from '@/config/environment';
 
 const logger = container.get<ILoggerService>(ContainerTypes.Logger);

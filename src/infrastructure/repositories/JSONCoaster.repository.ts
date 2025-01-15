@@ -1,12 +1,12 @@
 import { injectable, inject } from 'inversify';
-import { ICoasterRepository } from '@/domain/repositories/ICoaster.repository';
+import type { IJSONCoasterRepository } from '@/domain/repositories/IJSONCoaster.repository';
 import Coaster from '@/domain/entities/Coaster.entity';
 import Wagon from '@/domain/entities/Wagon.entity';
-import { IJSONClient } from '@/domain/database/IJSON.client';
+import type { IJSONClient } from '@/domain/database/IJSON.client';
 import { ContainerTypes } from '@/types/common';
 
 @injectable()
-class JSONCoasterRepository implements ICoasterRepository<Coaster | Wagon> {
+class JSONCoasterRepository implements IJSONCoasterRepository {
   private readonly jsonClient: IJSONClient;
 
   constructor(@inject(ContainerTypes.JSONClient) jsonClient: IJSONClient) {
@@ -113,6 +113,16 @@ class JSONCoasterRepository implements ICoasterRepository<Coaster | Wagon> {
    */
   public nextWagonId(): string {
     return `wagon:local:${new Date().getTime()}`;
+  }
+
+  /**
+   * Update synchronization time
+   * @param {number} timestamp new timestamp value
+   */
+  public updateSynchronizationTime(timestamp: number): void {
+    const syncTime = this.jsonClient.readSynchronizationTime();
+    syncTime.timestamp = timestamp;
+    this.jsonClient.updateSynchronizationTime(syncTime);
   }
 }
 

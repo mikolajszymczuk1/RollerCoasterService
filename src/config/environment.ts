@@ -1,7 +1,7 @@
 import dotenv from 'dotenv';
 import { container } from '@/config/container';
 import { ContainerTypes } from '@/types/common';
-import { ILoggerService } from '@/domain/services/ILogger.service';
+import type { ILoggerService } from '@/domain/services/ILogger.service';
 
 const logger = container.get<ILoggerService>(ContainerTypes.Logger);
 
