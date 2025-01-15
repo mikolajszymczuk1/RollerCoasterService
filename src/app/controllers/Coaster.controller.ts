@@ -3,7 +3,7 @@ import { instanceToPlain } from 'class-transformer';
 import type { Request, Response } from 'express';
 import type { ICoasterService } from '@/domain/services/ICoaster.service';
 import { ContainerTypes } from '@/types/common';
-import Logger from '@/infrastructure/logger';
+import type { ILoggerService } from '@/domain/services/ILogger.service';
 import { ResponseCodes } from '@/app/enums/ResponseCodes';
 import Coaster from '@/domain/entities/Coaster.entity';
 import Wagon from '@/domain/entities/Wagon.entity';
@@ -13,13 +13,13 @@ import type { ILeaderManagerService } from '@/domain/services/redis/ILeaderManag
 
 @injectable()
 class CoasterController {
-  private readonly logger: Logger;
+  private readonly logger: ILoggerService;
   private readonly coasterService: ICoasterService;
   private readonly redisService: IRedisService;
   private readonly leaderManagerService: ILeaderManagerService;
 
   constructor(
-    @inject(ContainerTypes.Logger) logger: Logger,
+    @inject(ContainerTypes.Logger) logger: ILoggerService,
     @inject(ContainerTypes.CoasterService) coasterService: ICoasterService,
     @inject(ContainerTypes.RedisService) redisService: IRedisService,
     @inject(ContainerTypes.LeaderManagerService) leaderManagerService: ILeaderManagerService,

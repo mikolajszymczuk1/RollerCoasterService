@@ -4,18 +4,18 @@ import Coaster from '@/domain/entities/Coaster.entity';
 import Wagon from '@/domain/entities/Wagon.entity';
 import { ContainerTypes } from '@/types/common';
 import type { ICoasterRepository } from '@/domain/repositories/ICoaster.repository';
-import RedisClient from '@/infrastructure/database/redisClient';
+import type { IRedisClient } from '@/domain/database/IRedis.client';
 import { instanceToPlain } from 'class-transformer';
 import { RedisChannels } from '@/enums/RedisChannels';
 
 @injectable()
 class RedisService implements IRedisService {
   private readonly redisCoasterRepository: ICoasterRepository<Promise<Coaster | Wagon>>;
-  private readonly redisClient: RedisClient;
+  private readonly redisClient: IRedisClient;
 
   constructor(
     @inject(ContainerTypes.RedisCoasterRepository) redisCoasterRepository: ICoasterRepository<Promise<Coaster | Wagon>>,
-    @inject(ContainerTypes.RedisClient) redisClient: RedisClient,
+    @inject(ContainerTypes.RedisClient) redisClient: IRedisClient,
   ) {
     this.redisCoasterRepository = redisCoasterRepository;
     this.redisClient = redisClient;

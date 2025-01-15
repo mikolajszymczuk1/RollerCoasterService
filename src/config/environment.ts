@@ -1,9 +1,9 @@
 import dotenv from 'dotenv';
 import { container } from '@/config/container';
 import { ContainerTypes } from '@/types/common';
-import Logger from '@/infrastructure/logger';
+import { ILoggerService } from '@/domain/services/ILogger.service';
 
-const logger = container.get<Logger>(ContainerTypes.Logger);
+const logger = container.get<ILoggerService>(ContainerTypes.Logger);
 
 /** Load all env variables based on env type */
 export const loadEnvironment = (): void => {

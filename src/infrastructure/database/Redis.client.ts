@@ -1,16 +1,17 @@
 import { injectable, inject } from 'inversify';
 import { createClient, type RedisClientType } from 'redis';
-import Logger from '@/infrastructure/logger';
+import type { ILoggerService } from '@/domain/services/ILogger.service';
 import { ContainerTypes } from '@/types/common';
+import type { IRedisClient } from '@/domain/database/IRedis.client';
 
 @injectable()
-class RedisClient {
+class RedisClient implements IRedisClient {
   private readonly client: RedisClientType;
   private readonly publisher: RedisClientType;
   private readonly subscriber: RedisClientType;
-  private readonly logger: Logger;
+  private readonly logger: ILoggerService;
 
-  constructor(@inject(ContainerTypes.Logger) logger: Logger) {
+  constructor(@inject(ContainerTypes.Logger) logger: ILoggerService) {
     const redisClientOptions = {
       url: process.env.REDIS_URL ?? 'redis://localhost:6379',
       database: Number(process.env.DATABASE ?? 0),

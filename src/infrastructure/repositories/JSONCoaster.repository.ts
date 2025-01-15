@@ -2,14 +2,14 @@ import { injectable, inject } from 'inversify';
 import { ICoasterRepository } from '@/domain/repositories/ICoaster.repository';
 import Coaster from '@/domain/entities/Coaster.entity';
 import Wagon from '@/domain/entities/Wagon.entity';
-import JSONClient from '@/infrastructure/database/jsonClient';
+import { IJSONClient } from '@/domain/database/IJSON.client';
 import { ContainerTypes } from '@/types/common';
 
 @injectable()
 class JSONCoasterRepository implements ICoasterRepository<Coaster | Wagon> {
-  private readonly jsonClient: JSONClient;
+  private readonly jsonClient: IJSONClient;
 
-  constructor(@inject(ContainerTypes.JSONClient) jsonClient: JSONClient) {
+  constructor(@inject(ContainerTypes.JSONClient) jsonClient: IJSONClient) {
     this.jsonClient = jsonClient;
   }
 

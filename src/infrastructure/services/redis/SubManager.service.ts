@@ -3,8 +3,8 @@ import type { ILeaderManagerService } from '@/domain/services/redis/ILeaderManag
 import type { IRedisService } from '@/domain/services/redis/IRedis.service';
 import type { ISubManagerService } from '@/domain/services/redis/ISubManager.service';
 import type { ICoasterService } from '@/domain/services/ICoaster.service';
-import RedisClient from '@/infrastructure/database/redisClient';
-import Logger from '@/infrastructure/logger';
+import type { IRedisClient } from '@/domain/database/IRedis.client';
+import type { ILoggerService } from '@/domain/services/ILogger.service';
 import { RedisChannels } from '@/enums/RedisChannels';
 import { ContainerTypes } from '@/types/common';
 import { plainToInstance } from 'class-transformer';
@@ -13,15 +13,15 @@ import Wagon from '@/domain/entities/Wagon.entity';
 
 @injectable()
 class SubManagerService implements ISubManagerService {
-  private readonly logger: Logger;
-  private readonly redisClient: RedisClient;
+  private readonly logger: ILoggerService;
+  private readonly redisClient: IRedisClient;
   private readonly leaderManagerService: ILeaderManagerService;
   private readonly redisService: IRedisService;
   private readonly coasterService: ICoasterService;
 
   constructor(
-    @inject(ContainerTypes.Logger) logger: Logger,
-    @inject(ContainerTypes.RedisClient) redisClient: RedisClient,
+    @inject(ContainerTypes.Logger) logger: ILoggerService,
+    @inject(ContainerTypes.RedisClient) redisClient: IRedisClient,
     @inject(ContainerTypes.LeaderManagerService) leaderManagerService: ILeaderManagerService,
     @inject(ContainerTypes.RedisService) redisService: IRedisService,
     @inject(ContainerTypes.CoasterService) coasterService: ICoasterService,

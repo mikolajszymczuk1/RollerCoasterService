@@ -2,20 +2,21 @@ import { instanceToPlain, plainToInstance } from 'class-transformer';
 import { injectable, inject } from 'inversify';
 import fs from 'fs';
 import path from 'path';
-import Logger from '@/infrastructure/logger';
+import type { ILoggerService } from '@/domain/services/ILogger.service';
 import { ContainerTypes } from '@/types/common';
 import Coaster from '@/domain/entities/Coaster.entity';
+import type { IJSONClient } from '@/domain/database/IJSON.client';
 
 @injectable()
-class JSONClient {
-  private readonly logger: Logger;
+class JSONClient implements IJSONClient {
+  private readonly logger: ILoggerService;
   private readonly dirPath: string;
   private readonly filePath: string;
   private readonly syncTimePath: string;
   private readonly leaderLogsPath: string;
   private readonly localLogsPath: string;
 
-  constructor(@inject(ContainerTypes.Logger) logger: Logger) {
+  constructor(@inject(ContainerTypes.Logger) logger: ILoggerService) {
     this.logger = logger;
     this.dirPath = path.resolve(__dirname, '../src/data');
     this.filePath = path.resolve(__dirname, `../src/data/data.${process.env.ENV_TYPE}.json`);
