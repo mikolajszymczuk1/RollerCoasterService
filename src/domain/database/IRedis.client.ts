@@ -4,6 +4,7 @@ export interface IRedisClient {
   get redisClient(): RedisClientType;
   get redisPublisher(): RedisClientType;
   get redisSubscriber(): RedisClientType;
+  get connected(): boolean;
   connect(): Promise<void>;
   set(key: string, value: string): Promise<void>;
   get(key: string): Promise<string | null>;

@@ -11,6 +11,7 @@ class RedisClient implements IRedisClient {
   private readonly subscriber: RedisClientType;
   private readonly logger: ILoggerService;
 
+  private isConnected: boolean = false;
   private reconnectAttempts: number = 0;
 
   constructor(@inject(ContainerTypes.Logger) logger: ILoggerService) {
@@ -46,6 +47,10 @@ class RedisClient implements IRedisClient {
     return this.subscriber;
   }
 
+  public get connected(): boolean {
+    return this.isConnected;
+  }
+
   /**
    * Setup event listeners for single redis client instance
    * @param {RedisClientType} client type of client
@@ -58,16 +63,20 @@ class RedisClient implements IRedisClient {
       this.reconnectAttempts = 0;
       if (nextClient) {
         await nextClient.connect();
+      } else {
+        this.isConnected = true;
       }
     });
 
     client.on('error', async (err): Promise<void> => {
       this.logger.error(`[${label}] Redis client error: ${err}`);
+      this.isConnected = false;
       await this.handleConnectionError('Client');
     });
 
     client.on('end', (): void => {
       this.logger.warn(`[${label}] Closed connection`);
+      this.isConnected = false;
     });
   }
 

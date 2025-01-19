@@ -76,6 +76,10 @@ class LeaderManagerService implements ILeaderManagerService {
     }
 
     setInterval(async (): Promise<void> => {
+      if (!this.redisClient.connected) {
+        return;
+      }
+
       if (!this.isLeader) {
         await this.tryToBecomeLeader();
       } else {
