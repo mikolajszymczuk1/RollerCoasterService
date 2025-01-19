@@ -42,6 +42,10 @@ class LeaderManagerService implements ILeaderManagerService {
       });
 
       this.isLeader = result === 'OK';
+
+      if (this.isLeader) {
+        this.logger.info('Leader set');
+      }
     } catch (err) {
       this.logger.error(`Redis error: ${err}`);
     }

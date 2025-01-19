@@ -10,7 +10,6 @@ const logger = container.get<ILoggerService>(ContainerTypes.Logger);
 const bootstrap = async (): Promise<void> => {
   loadEnvironment();
   const app = container.get<App>(ContainerTypes.App);
-  await app.initializeServices();
 
   const PORT = process.env.PORT ?? '8080';
 

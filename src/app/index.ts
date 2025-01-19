@@ -37,6 +37,7 @@ export class App {
 
     this.loadMiddlewares();
     this.loadRoutes();
+    this.initializeServices();
   }
 
   /** Load global app middlewares */
@@ -55,10 +56,12 @@ export class App {
   }
 
   /** Initialize all app services */
-  public async initializeServices(): Promise<void> {
-    await this.redisClient.connect();
-    await this.subManagerService.initSubscribers();
-    await this.leaderManagerService.initLeadershipCheck();
+  public initializeServices(): void {
+    Promise.all([
+      this.redisClient.connect(),
+      this.subManagerService.initSubscribers(),
+      this.leaderManagerService.initLeadershipCheck(),
+    ]);
     this.logger.info('App services loaded ✅');
   }
 }

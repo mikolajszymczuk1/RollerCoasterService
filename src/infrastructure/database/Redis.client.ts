@@ -11,10 +11,17 @@ class RedisClient implements IRedisClient {
   private readonly subscriber: RedisClientType;
   private readonly logger: ILoggerService;
 
+  private reconnectAttempts: number = 0;
+
   constructor(@inject(ContainerTypes.Logger) logger: ILoggerService) {
     const redisClientOptions = {
       url: process.env.REDIS_URL ?? 'redis://localhost:6379',
       database: Number(process.env.DATABASE ?? 0),
+      socket: {
+        reconnectStrategy: () => 1000,
+        timeout: 1000,
+        connectTimeout: 1000,
+      },
     };
 
     this.client = createClient(redisClientOptions);
@@ -39,33 +46,72 @@ class RedisClient implements IRedisClient {
     return this.subscriber;
   }
 
+  /**
+   * Setup event listeners for single redis client instance
+   * @param {RedisClientType} client type of client
+   * @param {string} label name of redis client instance
+   * @param {RedisClientType} nextClient client that should be trigger to next connect process
+   */
+  private setupListeners(client: RedisClientType, label: string, nextClient?: RedisClientType): void {
+    client.on('connect', async (): Promise<void> => {
+      this.logger.info(`[${label}] Connected to Redis`);
+      this.reconnectAttempts = 0;
+      if (nextClient) {
+        await nextClient.connect();
+      }
+    });
+
+    client.on('error', async (err): Promise<void> => {
+      this.logger.error(`[${label}] Redis client error: ${err}`);
+      await this.handleConnectionError('Client');
+    });
+
+    client.on('end', (): void => {
+      this.logger.warn(`[${label}] Closed connection`);
+    });
+  }
+
   /** Set all redis events to listen */
   private initRedisEvents(): void {
-    this.client.on('connect', (): void => {
-      this.logger.info('Connected to Redis');
-    });
+    this.setupListeners(this.client, 'Client', this.publisher);
+    this.setupListeners(this.publisher, 'Publisher', this.subscriber);
+    this.setupListeners(this.subscriber, 'Subscriber');
+  }
 
-    this.client.on('reconnecting', (): void => {
-      this.logger.warn('Reconnect to Redis');
-    });
+  /**
+   * Handle connection error, if max reconnect attempts then restart all connections
+   * @param {string} label name of redis client instance
+   */
+  private async handleConnectionError(label: string): Promise<void> {
+    this.logger.warn(`[${label}] Attempting to reconnect...`);
 
-    this.client.on('error', (err): void => {
-      this.logger.error(`Redis client error: ${err}`);
-    });
+    // Increment reconnect attempts
+    this.reconnectAttempts++;
+
+    if (this.reconnectAttempts >= 2) {
+      this.logger.error(`[${label}] Max reconnect attempts reached. Restarting connections`);
+      this.reconnectAttempts = 0;
+      await this.restartConnections();
+    }
+  }
+
+  /** Restart all redis connections and rerun connection process */
+  private async restartConnections(): Promise<void> {
+    this.logger.warn('Restarting all Redis connections ...');
+
+    await Promise.allSettled([
+      this.client.disconnect().catch(() => {}),
+      this.publisher.isOpen ? this.publisher.disconnect().catch(() => {}) : Promise.resolve(),
+      this.subscriber.isOpen ? this.subscriber.disconnect().catch(() => {}) : Promise.resolve(),
+    ]);
+
+    await new Promise((resolve) => setTimeout(resolve, 5000));
+    await this.connect();
   }
 
   /** Connect to redis service */
   public async connect(): Promise<void> {
     await this.client.connect();
-    await this.publisher.connect();
-    await this.subscriber.connect();
-  }
-
-  /** Disconnect from redis service */
-  public async disconnect(): Promise<void> {
-    await this.client.disconnect();
-    await this.publisher.disconnect();
-    await this.subscriber.disconnect();
   }
 
   /**
