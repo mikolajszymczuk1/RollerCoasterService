@@ -10,8 +10,29 @@ export interface IRedisService {
   nextCoasterId(): Promise<string>;
   nextWagonId(): Promise<string>;
 
-  addCoasterPublish(coasterToAdd: Coaster, isSync: boolean, nodeId: string): Promise<void>;
-  updateCoasterPublish(coasterId: string, newCoasterData: Coaster, isSync: boolean, nodeId: string): Promise<void>;
-  addWagonPublish(coasterId: string, wagonToAdd: Wagon, isSync: boolean, nodeId: string): Promise<void>;
-  deleteWagonPublish(coasterId: string, wagonId: string, isSync: boolean, nodeId: string): Promise<void>;
+  addCoasterPublish(coasterToAdd: Coaster, isSync: boolean, nodeId: string, timestamp: number): Promise<void>;
+
+  updateCoasterPublish(
+    coasterId: string,
+    newCoasterData: Coaster,
+    isSync: boolean,
+    nodeId: string,
+    timestamp: number,
+  ): Promise<void>;
+
+  addWagonPublish(
+    coasterId: string,
+    wagonToAdd: Wagon,
+    isSync: boolean,
+    nodeId: string,
+    timestamp: number,
+  ): Promise<void>;
+
+  deleteWagonPublish(
+    coasterId: string,
+    wagonId: string,
+    isSync: boolean,
+    nodeId: string,
+    timestamp: number,
+  ): Promise<void>;
 }

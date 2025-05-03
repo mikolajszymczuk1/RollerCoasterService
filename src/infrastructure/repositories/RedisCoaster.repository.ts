@@ -1,16 +1,16 @@
 import { injectable, inject } from 'inversify';
-import { ICoasterRepository } from '@/domain/repositories/ICoaster.repository';
+import type { IRedisCoasterRepository } from '@/domain/repositories/IRedisCoaster.repository';
 import Coaster from '@/domain/entities/Coaster.entity';
 import Wagon from '@/domain/entities/Wagon.entity';
-import RedisClient from '@/infrastructure/database/redisClient';
+import type { IRedisClient } from '@/domain/database/IRedis.client';
 import { ContainerTypes } from '@/types/common';
 import { instanceToPlain, plainToInstance } from 'class-transformer';
 
 @injectable()
-class RedisCoasterRepository implements ICoasterRepository<Promise<Coaster | Wagon>> {
-  private readonly redisClient: RedisClient;
+class RedisCoasterRepository implements IRedisCoasterRepository {
+  private readonly redisClient: IRedisClient;
 
-  constructor(@inject(ContainerTypes.RedisClient) redisClient: RedisClient) {
+  constructor(@inject(ContainerTypes.RedisClient) redisClient: IRedisClient) {
     this.redisClient = redisClient;
   }
 

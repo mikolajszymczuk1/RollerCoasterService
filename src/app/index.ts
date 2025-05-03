@@ -6,24 +6,24 @@ import compression from 'compression';
 import { json } from 'body-parser';
 import { injectable, inject } from 'inversify';
 import { ContainerTypes } from '@/types/common';
-import Logger from '@/infrastructure/logger';
-import RedisClient from '@/infrastructure/database/redisClient';
+import type { ILoggerService } from '@/domain/services/ILogger.service';
+import type { IRedisClient } from '@/domain/database/IRedis.client';
 import rollercoasterRouter from '@/app/routes/rollercoaster.router';
 import type { ILeaderManagerService } from '@/domain/services/redis/ILeaderManager.service';
 import type { ISubManagerService } from '@/domain/services/redis/ISubManager.service';
 
 @injectable()
 export class App {
-  private readonly logger: Logger;
-  private readonly redisClient: RedisClient;
+  private readonly logger: ILoggerService;
+  private readonly redisClient: IRedisClient;
   private readonly leaderManagerService: ILeaderManagerService;
   private readonly subManagerService: ISubManagerService;
 
   public app: Application;
 
   constructor(
-    @inject(ContainerTypes.Logger) logger: Logger,
-    @inject(ContainerTypes.RedisClient) redisClient: RedisClient,
+    @inject(ContainerTypes.Logger) logger: ILoggerService,
+    @inject(ContainerTypes.RedisClient) redisClient: IRedisClient,
     @inject(ContainerTypes.LeaderManagerService) leaderManagerService: ILeaderManagerService,
     @inject(ContainerTypes.SubManagerService) subManagerService: ISubManagerService,
   ) {
@@ -37,6 +37,7 @@ export class App {
 
     this.loadMiddlewares();
     this.loadRoutes();
+    this.initializeServices();
   }
 
   /** Load global app middlewares */
@@ -55,10 +56,12 @@ export class App {
   }
 
   /** Initialize all app services */
-  public async initializeServices(): Promise<void> {
-    await this.redisClient.connect();
-    await this.subManagerService.initSubscribers();
-    await this.leaderManagerService.initLeadershipCheck();
+  public initializeServices(): void {
+    Promise.all([
+      this.redisClient.connect(),
+      this.subManagerService.initSubscribers(),
+      this.leaderManagerService.initLeadershipCheck(),
+    ]);
     this.logger.info('App services loaded ✅');
   }
 }

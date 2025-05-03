@@ -3,7 +3,7 @@ import { instanceToPlain } from 'class-transformer';
 import type { Request, Response } from 'express';
 import type { ICoasterService } from '@/domain/services/ICoaster.service';
 import { ContainerTypes } from '@/types/common';
-import Logger from '@/infrastructure/logger';
+import type { ILoggerService } from '@/domain/services/ILogger.service';
 import { ResponseCodes } from '@/app/enums/ResponseCodes';
 import Coaster from '@/domain/entities/Coaster.entity';
 import Wagon from '@/domain/entities/Wagon.entity';
@@ -13,13 +13,13 @@ import type { ILeaderManagerService } from '@/domain/services/redis/ILeaderManag
 
 @injectable()
 class CoasterController {
-  private readonly logger: Logger;
+  private readonly logger: ILoggerService;
   private readonly coasterService: ICoasterService;
   private readonly redisService: IRedisService;
   private readonly leaderManagerService: ILeaderManagerService;
 
   constructor(
-    @inject(ContainerTypes.Logger) logger: Logger,
+    @inject(ContainerTypes.Logger) logger: ILoggerService,
     @inject(ContainerTypes.CoasterService) coasterService: ICoasterService,
     @inject(ContainerTypes.RedisService) redisService: IRedisService,
     @inject(ContainerTypes.LeaderManagerService) leaderManagerService: ILeaderManagerService,
@@ -49,7 +49,12 @@ class CoasterController {
       const savedCoaster = this.coasterService.addCoaster(coasterToAdd);
 
       try {
-        await this.redisService.addCoasterPublish(savedCoaster, false, this.leaderManagerService.id);
+        await this.redisService.addCoasterPublish(
+          savedCoaster,
+          false,
+          this.leaderManagerService.id,
+          new Date().getTime(),
+        );
       } catch (err) {
         this.logger.error(`Error while publish changes to: ${RedisChannels.COASTER_ADD}`);
       }
@@ -82,7 +87,13 @@ class CoasterController {
       const updatedCoaster = this.coasterService.updateCoaster(coasterId, coasterToUpdate);
 
       try {
-        await this.redisService.updateCoasterPublish(coasterId, updatedCoaster, false, this.leaderManagerService.id);
+        await this.redisService.updateCoasterPublish(
+          coasterId,
+          updatedCoaster,
+          false,
+          this.leaderManagerService.id,
+          new Date().getTime(),
+        );
       } catch (err) {
         this.logger.error(`Error while publish changes to: ${RedisChannels.COASTER_UPDATE}`);
       }
@@ -114,7 +125,13 @@ class CoasterController {
       const savedWagon = this.coasterService.addWagon(coasterId, wagonToAdd);
 
       try {
-        await this.redisService.addWagonPublish(coasterId, savedWagon, false, this.leaderManagerService.id);
+        await this.redisService.addWagonPublish(
+          coasterId,
+          savedWagon,
+          false,
+          this.leaderManagerService.id,
+          new Date().getTime(),
+        );
       } catch (err) {
         this.logger.error(`Error while publish changes to: ${RedisChannels.WAGON_ADD}`);
       }
@@ -138,7 +155,13 @@ class CoasterController {
       const deletedWagon = this.coasterService.deleteWagon(coasterId, wagonId);
 
       try {
-        await this.redisService.deleteWagonPublish(coasterId, wagonId, false, this.leaderManagerService.id);
+        await this.redisService.deleteWagonPublish(
+          coasterId,
+          wagonId,
+          false,
+          this.leaderManagerService.id,
+          new Date().getTime(),
+        );
       } catch (err) {
         this.logger.error(`Error while publish changes to: ${RedisChannels.WAGON_REMOVE}`);
       }

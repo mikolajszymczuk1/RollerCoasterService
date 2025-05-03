@@ -1,8 +1,9 @@
 import { injectable } from 'inversify';
 import { createLogger, format, transports } from 'winston';
+import type { ILoggerService } from '@/domain/services/ILogger.service';
 
 @injectable()
-class Logger {
+class Logger implements ILoggerService {
   private readonly INFO_FILE: string = 'logs/info.log';
   private readonly ERROR_FILE: string = 'logs/error.log';
   private readonly WARN_FILE: string = 'logs/warn.log';
@@ -52,7 +53,7 @@ class Logger {
     });
   }
 
-  get isLocalEnv(): boolean {
+  private get isLocalEnv(): boolean {
     return process.env.ENV_TYPE === 'local';
   }
 

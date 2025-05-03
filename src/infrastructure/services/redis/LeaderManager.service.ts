@@ -1,14 +1,14 @@
 import { injectable, inject } from 'inversify';
-import RedisClient from '@/infrastructure/database/redisClient';
+import type { IRedisClient } from '@/domain/database/IRedis.client';
 import { ContainerTypes } from '@/types/common';
 import { v4 as uuidv4 } from 'uuid';
 import type { ILeaderManagerService } from '@/domain/services/redis/ILeaderManager.service';
-import Logger from '@/infrastructure/logger';
+import type { ILoggerService } from '@/domain/services/ILogger.service';
 
 @injectable()
 class LeaderManagerService implements ILeaderManagerService {
-  private readonly logger: Logger;
-  private readonly redisClient: RedisClient;
+  private readonly logger: ILoggerService;
+  private readonly redisClient: IRedisClient;
   private readonly leaderId: string;
   private readonly leaderKey: string = 'leader';
   private readonly leaderTTL: number = 2; // in seconds
@@ -17,8 +17,8 @@ class LeaderManagerService implements ILeaderManagerService {
   private isLeader: boolean = false; // leader status
 
   constructor(
-    @inject(ContainerTypes.Logger) logger: Logger,
-    @inject(ContainerTypes.RedisClient) redisClient: RedisClient,
+    @inject(ContainerTypes.Logger) logger: ILoggerService,
+    @inject(ContainerTypes.RedisClient) redisClient: IRedisClient,
   ) {
     this.logger = logger;
     this.redisClient = redisClient;
@@ -42,6 +42,10 @@ class LeaderManagerService implements ILeaderManagerService {
       });
 
       this.isLeader = result === 'OK';
+
+      if (this.isLeader) {
+        this.logger.info('Leader set');
+      }
     } catch (err) {
       this.logger.error(`Redis error: ${err}`);
     }
@@ -72,6 +76,10 @@ class LeaderManagerService implements ILeaderManagerService {
     }
 
     setInterval(async (): Promise<void> => {
+      if (!this.redisClient.connected) {
+        return;
+      }
+
       if (!this.isLeader) {
         await this.tryToBecomeLeader();
       } else {

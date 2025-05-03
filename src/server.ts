@@ -1,16 +1,15 @@
 import { container } from '@/config/container';
 import { ContainerTypes } from '@/types/common';
 import App from '@/app';
-import Logger from '@/infrastructure/logger';
+import type { ILoggerService } from '@/domain/services/ILogger.service';
 import { loadEnvironment } from '@/config/environment';
 
-const logger = container.get<Logger>(ContainerTypes.Logger);
+const logger = container.get<ILoggerService>(ContainerTypes.Logger);
 
 /** Setup and run app */
 const bootstrap = async (): Promise<void> => {
   loadEnvironment();
   const app = container.get<App>(ContainerTypes.App);
-  await app.initializeServices();
 
   const PORT = process.env.PORT ?? '8080';
 

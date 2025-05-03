@@ -3,8 +3,8 @@ import type { ILeaderManagerService } from '@/domain/services/redis/ILeaderManag
 import type { IRedisService } from '@/domain/services/redis/IRedis.service';
 import type { ISubManagerService } from '@/domain/services/redis/ISubManager.service';
 import type { ICoasterService } from '@/domain/services/ICoaster.service';
-import RedisClient from '@/infrastructure/database/redisClient';
-import Logger from '@/infrastructure/logger';
+import type { IRedisClient } from '@/domain/database/IRedis.client';
+import type { ILoggerService } from '@/domain/services/ILogger.service';
 import { RedisChannels } from '@/enums/RedisChannels';
 import { ContainerTypes } from '@/types/common';
 import { plainToInstance } from 'class-transformer';
@@ -13,15 +13,15 @@ import Wagon from '@/domain/entities/Wagon.entity';
 
 @injectable()
 class SubManagerService implements ISubManagerService {
-  private readonly logger: Logger;
-  private readonly redisClient: RedisClient;
+  private readonly logger: ILoggerService;
+  private readonly redisClient: IRedisClient;
   private readonly leaderManagerService: ILeaderManagerService;
   private readonly redisService: IRedisService;
   private readonly coasterService: ICoasterService;
 
   constructor(
-    @inject(ContainerTypes.Logger) logger: Logger,
-    @inject(ContainerTypes.RedisClient) redisClient: RedisClient,
+    @inject(ContainerTypes.Logger) logger: ILoggerService,
+    @inject(ContainerTypes.RedisClient) redisClient: IRedisClient,
     @inject(ContainerTypes.LeaderManagerService) leaderManagerService: ILeaderManagerService,
     @inject(ContainerTypes.RedisService) redisService: IRedisService,
     @inject(ContainerTypes.CoasterService) coasterService: ICoasterService,
@@ -45,9 +45,10 @@ class SubManagerService implements ISubManagerService {
 
       try {
         const obj = JSON.parse(message);
+        const now = obj.timestamp;
         const coaster = plainToInstance(Coaster, obj.data as Coaster);
         await this.redisService.addCoaster(coaster);
-        await this.redisService.addCoasterPublish(coaster, true, obj.nodeId);
+        await this.redisService.addCoasterPublish(coaster, true, obj.nodeId, now);
       } catch (err) {
         this.logger.error(`Redis operation error [${RedisChannels.COASTER_ADD}]: ${err}`);
       }
@@ -60,9 +61,10 @@ class SubManagerService implements ISubManagerService {
 
       try {
         const obj = JSON.parse(message);
+        const now = obj.timestamp;
         const coaster = plainToInstance(Coaster, obj.data as Coaster);
         await this.redisService.updateCoaster(obj.coasterId, coaster);
-        await this.redisService.updateCoasterPublish(obj.coasterId, coaster, true, obj.nodeId);
+        await this.redisService.updateCoasterPublish(obj.coasterId, coaster, true, obj.nodeId, now);
       } catch (err) {
         this.logger.error(`Redis operation error [${RedisChannels.COASTER_UPDATE}]: ${err}`);
       }
@@ -75,9 +77,10 @@ class SubManagerService implements ISubManagerService {
 
       try {
         const obj = JSON.parse(message);
+        const now = obj.timestamp;
         const wagon = plainToInstance(Wagon, obj.data as Wagon);
         await this.redisService.addWagon(obj.coasterId, wagon);
-        await this.redisService.addWagonPublish(obj.coasterId, wagon, true, obj.nodeId);
+        await this.redisService.addWagonPublish(obj.coasterId, wagon, true, obj.nodeId, now);
       } catch (err) {
         this.logger.error(`Redis operation error [${RedisChannels.WAGON_ADD}]: ${err}`);
       }
@@ -90,8 +93,9 @@ class SubManagerService implements ISubManagerService {
 
       try {
         const obj = JSON.parse(message);
+        const now = obj.timestamp;
         await this.redisService.deleteWagon(obj.coasterId, obj.wagonId);
-        await this.redisService.deleteWagonPublish(obj.coasterId, obj.wagonId, true, obj.nodeId);
+        await this.redisService.deleteWagonPublish(obj.coasterId, obj.wagonId, true, obj.nodeId, now);
       } catch (err) {
         this.logger.error(`Redis operation error [${RedisChannels.WAGON_REMOVE}]: ${err}`);
       }
@@ -103,6 +107,7 @@ class SubManagerService implements ISubManagerService {
     await this.redisClient.subscribe(RedisChannels.SYNCHRONIZE_COASTER_ADD, async (message: string): Promise<void> => {
       try {
         const obj = JSON.parse(message);
+        this.coasterService.updateSynchronizationTime(obj.timestamp);
         if (obj.nodeId === this.leaderManagerService.id) {
           return;
         }
@@ -119,6 +124,7 @@ class SubManagerService implements ISubManagerService {
       async (message: string): Promise<void> => {
         try {
           const obj = JSON.parse(message);
+          this.coasterService.updateSynchronizationTime(obj.timestamp);
           if (obj.nodeId === this.leaderManagerService.id) {
             return;
           }
@@ -134,6 +140,7 @@ class SubManagerService implements ISubManagerService {
     await this.redisClient.subscribe(RedisChannels.SYNCHRONIZE_WAGON_ADD, async (message: string): Promise<void> => {
       try {
         const obj = JSON.parse(message);
+        this.coasterService.updateSynchronizationTime(obj.timestamp);
         if (obj.nodeId === this.leaderManagerService.id) {
           return;
         }
@@ -148,6 +155,7 @@ class SubManagerService implements ISubManagerService {
     await this.redisClient.subscribe(RedisChannels.SYNCHRONIZE_WAGON_REMOVE, async (message: string): Promise<void> => {
       try {
         const obj = JSON.parse(message);
+        this.coasterService.updateSynchronizationTime(obj.timestamp);
         if (obj.nodeId === this.leaderManagerService.id) {
           return;
         }
